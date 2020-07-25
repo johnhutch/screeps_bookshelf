@@ -19,8 +19,13 @@ StructureTower.prototype.defend =
 
 StructureTower.prototype.make_repairs = 
     function () {
+        let hostile = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
         // if tower has more than half energy (i.e., energy to spare)
-        if (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2) {
+        // and the room is at full capacity
+        // and no one's attacking
+        if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
+          && (this.room.energyCapacityAvailable === this.room.energyAvailable)
+          && (hostile == undefined) ) {
           // find closest structure with less than 2/3 of its life
           let closestDamagedStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
               filter: (target) => target.hits < target.hitsMax / 1.5

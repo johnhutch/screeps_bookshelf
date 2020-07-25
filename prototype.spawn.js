@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder'];
+var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder', 'wallRepairer'];
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
@@ -8,7 +8,8 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         // init creep count defaults if they're not set
         for (let role of listOfRoles) {
             if (this.memory.minCreeps[role] == undefined) {
-              //console.log(room.name + " don't know shit about " + role);
+              console.log(room.name + " don't know shit about " + role);
+              this.memory.minCreeps[role] = 1;
             }
         }
 
@@ -69,7 +70,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             for (let role of listOfRoles) {
                 if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
                     if (role == 'hauler') {
-                        name = this.createHauler(currentEnergy);
+                        name = this.createHauler(150);
                     }
                     else {
                         name = this.createCustomCreep(currentEnergy, role);
@@ -126,8 +127,8 @@ StructureSpawn.prototype.createHauler =
         console.log("trying to create a hauler with " + energy + " energy.");
         // create a body with twice as many CARRY as MOVE parts
         var numberOfParts = Math.floor(energy / 150);
-        // make sure the creep is not too big (more than 50 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor(50 / 3));
+        // make sure the creep is not too big (more than 6 parts)
+        numberOfParts = Math.min(numberOfParts, Math.floor(6 / 3));
         var body = [];
         for (let i = 0; i < numberOfParts * 2; i++) {
             body.push(CARRY);

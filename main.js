@@ -61,8 +61,6 @@ module.exports.loop = function () {
     var towers = _.filter(Game.structures, s => s.structureType == STRUCTURE_TOWER);
     for (let tower of towers) {
         tower.defend();
-        if (tower.room.energyCapacityAvailable === tower.room.energyAvailable) {
-            tower.make_repairs();
-        }
+        tower.make_repairs();
     }
 }
