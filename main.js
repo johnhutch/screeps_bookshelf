@@ -1,9 +1,9 @@
 require('prototype.creep');
+require('prototype.spawn');
 
 var roleHarvester = require('role.harvester');
 var roleBuilder = require('role.builder');
 var roleUpgrader = require('role.upgrader');
-var roleRoadbuilder = require('role.roadbuilder');
 var roleMiner = require('role.miner');
 var roleFixer = require('role.fixer');
 var roleHauler = require('role.hauler');
@@ -138,52 +138,26 @@ var utilizeTowers = function(roomName) {
 }
 
 module.exports.loop = function () {
-    
-    const numOfHarvesters = _.filter(Game.creeps, (creep) => creep.memory.role == 'harvester');
-    const numOfBuilders = _.filter(Game.creeps, (creep) => creep.memory.role == 'builder');
-    const numOfUpgraders = _.filter(Game.creeps, (creep) => creep.memory.role == 'upgrader');
-    const numOfFixers = _.filter(Game.creeps, (creep) => creep.memory.role == 'fixer');
-    const numOfMiners = _.filter(Game.creeps, (creep) => creep.memory.role == 'miner');
-    const numOfHaulers = _.filter(Game.creeps, (creep) => creep.memory.role == 'hauler');
+    // check for memory entries of died creeps by iterating over Memory.creeps
+    for (let name in Memory.creeps) {
+        // and checking if the creep is still alive
+        if (Game.creeps[name] == undefined) {
+            // if not, delete the memory entry
+            delete Memory.creeps[name];
+        }
+    }
 
+    // for each spawn
+    for (let spawnName in Game.spawns) {
+        // run spawn logic
+        Game.spawns[spawnName].spawnCreepsIfNecessary();
+    }
 
     for(var name in Game.rooms) {
         //   console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
         utilizeTowers(name);
         // buildNewRoads(name);
-        // destroyAllRoadConstruction(name);
-
-        var containers = Game.rooms[name].find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_CONTAINER);
-            }
-        });
-        // console.log("Miners: " + miners.length + ". Haulers: " + haulers.length + ". Containers: " + containers.length);
-        
-        /*
-        if(harvesters.length < Game.rooms[name].find(FIND_SOURCES).length && Game.rooms[name].energyAvailable >= 200) {
-            spawnNew("harvester", Game.rooms[name]);
-        }
-        */
-        if(numOfMiners.length < containers.length) {
-            spawnNew("miner", Game.rooms[name]);
-        }
-        if( (numOfHaulers.length < containers.length +2 ) && (numOfMiners.length >= numOfHaulers.length / 2) ) {
-            spawnNew("hauler", Game.rooms[name]);
-        }
-        if( (numOfBuilders.length < Game.rooms[name].find(FIND_SOURCES).length) 
-            && Game.rooms[name].find(FIND_CONSTRUCTION_SITES).length > numOfBuilders.length * 2
-            && Game.rooms[name].energyAvailable >= 400
-            && numOfBuilders.length < containers.length + 2
-            && numOfMiners.length > 0) {
-                spawnNew("builder", Game.rooms[name]);
-        }
-        if(numOfUpgraders.length < 3 && Game.rooms[name].energyAvailable >= 200) {
-            spawnNew("upgrader", Game.rooms[name]);
-        }
-        if(numOfFixers.length < containers.length && Game.rooms[name].energyAvailable >= 200) {
-            spawnNew("fixer", Game.rooms[name]);
-        }
+        //destroyAllRoadConstruction(name);
     }
 
     // for each creeps
