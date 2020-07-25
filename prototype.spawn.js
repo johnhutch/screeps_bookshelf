@@ -93,7 +93,7 @@ StructureSpawn.prototype.createCustomCreep =
     function (energy, roleName) {
         if (energy < 200) {
           // can't create a creep. dump out.
-          break;
+          return;
         }
         console.log("trying to create a " + roleName + " with " + energy + " energy.");
         // create a balanced body as big as possible with the given energy
