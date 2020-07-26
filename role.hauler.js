@@ -41,11 +41,15 @@ module.exports = {
         }
         // if creep is supposed to get energy
         else {
-            // find closest container
-            let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                filter: s => (s.structureType == STRUCTURE_CONTAINER)
-                           && s.store[RESOURCE_ENERGY] > 0
-            });
+            // look for dropped resources from dead creeps
+            let container = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+            if (container == undefined) {
+                // find closest container
+                let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                    filter: s => (s.structureType == STRUCTURE_CONTAINER)
+                              && s.store[RESOURCE_ENERGY] > 0
+                });
+            }
 
             if (container == undefined) {
                 container = creep.room.storage;
