@@ -71,15 +71,10 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                 if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
                     if (role == 'hauler') {
                         name = this.createHauler(150);
-                    }
-                    else {
+                    } else {
                         name = this.createCustomCreep(currentEnergy, role);
                     }
                     break;
-                }
-                if ((role == 'builder')
-                  && (this.room.find(FIND_CONSTRUCTION_SITES).length > numberOfCreeps['builder'])) {
-                      name = this.createCustomCreep(currentEnergy, role);
                 }
             }
         }
