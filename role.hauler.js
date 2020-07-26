@@ -42,27 +42,34 @@ module.exports = {
         // if creep is supposed to get energy
         else {
             // look for dropped resources from dead creeps
-            let container = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-            if (container == undefined) {
+            let dropped_resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
+                filter: r => (r.resourceType == RESOURCE_ENERGY)
+            });
+            if (dropped_resource == undefined) {
                 // find closest container
-                let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                     filter: s => (s.structureType == STRUCTURE_CONTAINER)
                               && s.store[RESOURCE_ENERGY] > 0
                 });
-            }
+                if (container == undefined) {
+                    container = creep.room.storage;
+                }
 
-            if (container == undefined) {
-                container = creep.room.storage;
-            }
-
-            // if one was found
-            if (container != undefined) {
-                // try to withdraw energy, if the container is not in range
-                if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                // if one was found
+                if (container != undefined) {
+                    // try to withdraw energy, if the container is not in range
+                    if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        // move towards it
+                        creep.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
+                    }
+                } 
+            } else {
+                if (creep.pickup(dropped_resource) == ERR_NOT_IN_RANGE) {
                     // move towards it
-                    creep.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
+                    creep.moveTo(dropped_resource, {visualizePathStyle: {stroke: '#ff0000'}});
                 }
             }
+
         }
     }
 };
