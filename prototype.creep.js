@@ -5,12 +5,20 @@ var roles = {
     hauler: require('role.hauler'),
     miner: require('role.miner'),
     fixer: require('role.fixer'),
-    wallRepairer: require('role.wallRepairer')
+    wallRepairer: require('role.wallRepairer'),
+    rampartRepairer: require('role.rampartRepairer')
 };
 
 Creep.prototype.runRole =
     function () {
         roles[this.memory.role].run(this);
+    };
+
+Creep.prototype.buildRoad =
+    function () {
+        // if this space doesn't have a road
+        // increment its counter in memory
+        // if the counter is over 5, build a road and delete the counter 
     };
 
 /** @function 

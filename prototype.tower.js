@@ -26,14 +26,34 @@ StructureTower.prototype.make_repairs =
         if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
           && (this.room.energyCapacityAvailable === this.room.energyAvailable)
           && (hostile == undefined) ) {
-          // find closest structure with less than 2/3 of its life
-          let closestDamagedStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
-              filter: (target) => target.hits < target.hitsMax / 1.5
+
+          // find all potential structures that need a bit more than a tiny bit of fixing
+          var structures = this.room.find(FIND_STRUCTURES, {
+              filter: (target) => target.hits < target.hitsMax / 1.2
           });
 
-          // and then repair it a bit
-          if(closestDamagedStructure) {
-              this.repair(closestDamagedStructure);
+          var target = undefined;
+
+          // loop with increasing percentages
+          for (let percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001){
+              // find a structure with less than percentage hits
+              for (let structure of structures) {
+                  if (structure.hits / structure.hitsMax < percentage) {
+                      target = structure;
+                      break;
+                  }
+              }
+
+              // if there is one
+              if (target != undefined) {
+                  // break the loop
+                  break;
+              }
+          }
+
+          // if we find a structure that has to be repaired
+          if (target != undefined) {
+            this.repair(target)
           }
         }
     };

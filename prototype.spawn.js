@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder', 'wallRepairer'];
+var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder', 'wallRepairer', 'rampartRepairer'];
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
@@ -76,6 +76,10 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                         name = this.createCustomCreep(currentEnergy, role);
                     }
                     break;
+                }
+                if ((role == 'builder')
+                  && (this.room.find(FIND_CONSTRUCTION_SITES).length > numberOfCreeps['builder'])) {
+                      name = this.createCustomCreep(currentEnergy, role);
                 }
             }
         }

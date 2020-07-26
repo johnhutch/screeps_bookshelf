@@ -1,48 +1,41 @@
-/*
- * Module code goes here. Use 'module.exports' to export things:
- * module.exports.thing = 'a thing';
- *
- * You can import it from another modules like this:
- * var mod = require('role.builder');
- * mod.thing == 'a thing'; // true
- */
-var roleFixer= {
+var roleBuilder = require('role.builder');
 
-    /** @param {Creep} creep **/
+module.exports = {
     run: function(creep) {
+        // if creep is trying to repair something but has no energy left
+        if (creep.memory.working == true && creep.carry.energy == 0) {
+            creep.memory.working = false;
+        }
+        // if creep is harvesting energy but is full
+        else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
+            creep.memory.working = true;
+        }
 
-	    if(creep.memory.repairing && creep.store[RESOURCE_ENERGY] == 0) {
-            creep.memory.repairing = false;
-            creep.say('🔄 harvest');
-	    }
-	    if(!creep.memory.repairing && creep.store.getFreeCapacity() == 0) {
-	        creep.memory.repairing = true;
-	        creep.say('🚧 repair');
-	    }
-
-	    if(creep.memory.repairing) {
-            var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: function(object) {
-                    return (object.hits < object.hitsMax / 1.2);
-                }
+        // if creep is supposed to repair something
+        if (creep.memory.working == true) {
+            // find closest structure with less than max hits
+            // Exclude walls because they have way too many max hits and would keep
+            // our repairers busy forever.
+            var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
             });
-            if(targets.length) {
-                if(creep.repair(targets[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
-                }
-            } else {
-                //console.log("fulla stuff and nuthin to fix");
-                var targets = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_SPAWN);
-                    }
-                });
-                creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
-            }
-	    } else {
-            creep.getEnergy(true, false)
-	    }
-	}
-};
 
-module.exports = roleFixer;
+            // if we find one
+            if (structure != undefined) {
+                // fix it
+                if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
+                    creep.moveTo(structure, {visualizePathStyle: {stroke: '#0000ff'}});
+                }
+            }
+            // if we can't fine one
+            else {
+                // look for construction sites
+                roleBuilder.run(creep);
+            }
+        }
+            // if creep is supposed to get energy
+        else {
+            creep.getEnergy(true, true);
+        }
+    }
+}
