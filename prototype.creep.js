@@ -17,8 +17,29 @@ Creep.prototype.runRole =
 Creep.prototype.buildRoad =
     function () {
         // if this space doesn't have a road
-        // increment its counter in memory
-        // if the counter is over 5, build a road and delete the counter 
+        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ) == false ) {
+            memval = "road_" + this.pos.x + "_" + this.pos.y;
+
+            // in case this is a brand new room, initialize memory.roads
+            if (this.room.memory.roads == undefined) {
+                this.room.memory.roads = {};
+            }
+
+            // if this is a space UPON WHICH WE HATH NEVER TROD
+            if (this.room.memory.roads[memval] == undefined) {
+                this.room.memory.roads[memval] = 1;
+            } else {
+                this.room.memory.roads[memval]++;
+
+                // if many creeps HATH TROD here... build a muthfuckin road
+                if (this.room.memory.roads[memval] >= 10) {
+                    //console.log("building a road! at: " + memval);
+                    this.room.createConstructionSite(this.pos.x, this.pos.y, STRUCTURE_ROAD);
+                    // and delete the memory record cause we don't need that shit anymore
+                    delete this.room.memory.roads[memval];
+                }
+            }
+        } 
     };
 
 /** @function 
