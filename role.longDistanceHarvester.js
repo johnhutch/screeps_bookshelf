@@ -18,8 +18,7 @@ module.exports = {
             if (creep.room.name == creep.memory.home) {
                 // find closest link, spawn, extension or tower which is not full
                 var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                    filter: (s) => (s.structureType == STRUCTURE_LINK
-                                 || s.structureType == STRUCTURE_SPAWN
+                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
                                  || s.structureType == STRUCTURE_EXTENSION
                                  || s.structureType == STRUCTURE_TOWER)
                                  && s.energy < s.energyCapacity
