@@ -1,8 +1,34 @@
 var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder', 'wallRepairer', 'rampartRepairer'];
 
 Structure.prototype.notify =
-  function (message) {
-  };
+    function (name, creepRole) {
+        console.log(this.name + " spawned new " + creepRole);
+    };
+
+Structure.prototype.findContaineredSourceId =
+    function () {
+        let room = this.room;
+        let sources = room.find(FIND_SOURCES);
+        let creepsInRoom = room.find(FIND_MY_CREEPS);
+        let sourceId = undefined;
+
+        for (let source of sources) {
+            // if the source has no miner
+            if (!_.some(creepsInRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
+                // check whether or not the source has a container
+                let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
+                    filter: s => s.structureType == STRUCTURE_CONTAINER
+                });
+                // if there is a container next to the source
+                if (containers.length > 0) {
+                    sourceId = source.id;
+                    break;
+                }
+                // TODO: else => create a container on a valid square next to the source
+            }
+        }
+        return (sourceId);
+    };
 
 // create a new function for StructureSpawn
 StructureSpawn.prototype.spawnCreepsIfNecessary =
@@ -28,6 +54,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         let maxEnergy = room.energyCapacityAvailable;
         let currentEnergy = room.energyAvailable;
         let name = undefined;
+        let creepRole = undefined;
 
         // if no harvesters are left AND either no miners or no hauler are left
         //  create a backup creep
@@ -38,34 +65,24 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                 (room.storage != undefined && room.storage.store[RESOURCE_ENERGY] >= 150 + 550)) {
                 console.log("No harvesters or haulers, but we have a miner or some stored energy, so creating a hauler");
                 name = this.createHauler(150);
+                creepRole = "hauler";
             }
             // if there is no miner and not enough energy in Storage left
             else {
                 console.log("No harvester, haulers, miners, or stored energy. Created a harvester");
                 name = this.createCustomCreep(room.energyAvailable, 'harvester');
+                creepRole = "harvester";
             }
         }
         // if no backup creep is required
         else {
             this.memory.backup_needed = false;
             // check if all sources have miners
-            let sources = room.find(FIND_SOURCES);
-            for (let source of sources) {
-                // if the source has no miner
-                if (!_.some(creepsInRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
-                    // check whether or not the source has a container
-                    let containers = source.pos.findInRange(FIND_STRUCTURES, 1, {
-                        filter: s => s.structureType == STRUCTURE_CONTAINER
-                    });
-                    // if there is a container next to the source
-                    if (containers.length > 0) {
-                        // spawn a miner
-                        console.log("Trying to spawn a miner with " + room.energyAvailable);
-                        name = this.createMiner(source.id);
-                        break;
-                    }
-                    // TODO: else => create a container on a valid square next to the source
-                }
+            let sourceId = this.findContaineredSourceId();
+
+            if(sourceId) {
+                name = this.createMiner(sourceId);
+                creepRole = "miner";
             }
         }
 
@@ -78,6 +95,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                     } else {
                         name = this.createCustomCreep(currentEnergy, role);
                     }
+                    creeRole = role;
                     break;
                 }
             }
@@ -98,13 +116,14 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
 
                 if (numberOfLongDistanceHarvesters[roomName] < this.memory.minLongDistanceHarvesters[roomName]) {
                     name = this.createLongDistanceHarvester(currentEnergy, 2, room.name, roomName, 0);
+                    creepRole = "LDH";
                 }
             }
         }
 
         // print name to console if spawning was a success
-        if (name != undefined && _.isString(name)) {
-            console.log(this.name + " spawned new creep: " + name + " (" + Game.creeps[name].memory.role + ")");
+        if (name == 0) {
+            this.notify(name, creepRole);
             for (let role of listOfRoles) {
                 console.log(role + ": " + numberOfCreeps[role]);
             }
@@ -118,7 +137,6 @@ StructureSpawn.prototype.createCustomCreep =
           // can't create a creep. dump out.
           return;
         }
-        console.log("trying to create a " + roleName + " with " + energy + " energy.");
         // create a balanced body as big as possible with the given energy
         var numberOfParts = Math.floor(energy / 200);
         // make sure the creep is not too big (more than 15 parts)
@@ -146,7 +164,6 @@ StructureSpawn.prototype.createMiner =
 
 StructureSpawn.prototype.createHauler =
     function (energy) {
-        console.log("trying to create a hauler with " + energy + " energy.");
         // create a body with twice as many CARRY as MOVE parts
         var numberOfParts = Math.floor(energy / 150);
         // make sure the creep is not too big (more than 6 parts)
@@ -165,7 +182,6 @@ StructureSpawn.prototype.createHauler =
 
 StructureSpawn.prototype.createLongDistanceHarvester =
     function (energy, numberOfWorkParts, home, target, sourceIndex) {
-        console.log("trying to create an LDH with " + energy + " energy.");
         // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
         var body = [];
         for (let i = 0; i < numberOfWorkParts; i++) {
