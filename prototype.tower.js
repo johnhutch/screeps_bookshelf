@@ -38,7 +38,7 @@ StructureTower.prototype.make_repairs =
           var target = undefined;
 
           // loop with increasing percentages
-          for (let percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001){
+          for (let percentage = 0.05; percentage <= 1; percentage = percentage + 0.05){
               // find a structure with less than percentage hits
               for (let structure of structures) {
                   if (structure.hits / structure.hitsMax < percentage) {

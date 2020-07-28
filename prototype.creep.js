@@ -16,13 +16,19 @@ Creep.prototype.runRole =
         roles[this.memory.role].run(this);
     };
 
+Creep.prototype.rdMemval = 
+    function () {
+        let memval = "rd_" + this.pos.x + "_" + this.pos.y;
+        return memval;
+    };
+
 Creep.prototype.buildRoad =
     function () {
         // if this space doesn't have a road
-        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ) == false ) {
-            memval = "road_" + this.pos.x + "_" + this.pos.y;
+        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType != STRUCTURE_ROAD) } ) == false ) {
+            memval = Creep.rdMemval;
 
-            // in case this is a brand new room, initialize memory.roads
+            // in case this is a brand new room, initialize memory.cowpaths
             if (this.room.memory.cowpaths == undefined) {
                 this.room.memory.cowpaths = {};
             }
@@ -44,17 +50,15 @@ Creep.prototype.buildRoad =
         } 
         // if this space already has a road
         if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ) == false) {
-            memval = "road_" + this.pos.x + "_" + this.pos.y;
-
             // in case this is a brand new room, initialize memory.roads
             if (this.room.memory.roads == undefined) {
                 this.room.memory.roads = {};
-            }   
-            
+            }
+
             // if this is a space UPON WHICH WE HATH NEVER TROD
             if (this.room.memory.roads[memval] == undefined) {
                 this.room.memory.roads[memval] = true;
-            } 
+            }
         }
     };
 

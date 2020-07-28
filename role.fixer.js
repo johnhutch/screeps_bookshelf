@@ -13,18 +13,49 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
-            // find closest structure with less than max hits
-            // Exclude walls because they have way too many max hits and would keep
-            // our repairers busy forever.
-            var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
+            // find all ramparts in the room
+            var structures = creep.room.find(FIND_STRUCTURES, {
+                filter: (s) => (s.structureType != STRUCTURE_RAMPART
+                             && s.structureType != STRUCTURE_WALL)
             });
 
-            // if we find one
-            if (structure != undefined) {
-                // fix it
-                if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(structure, {visualizePathStyle: {stroke: '#0000ff'}});
+            var target = undefined;
+
+            // loop with increasing percentages
+            for (let percentage = 0.05; percentage <= 1; percentage = percentage + 0.05){
+                // find a structure with less than percentage hits
+                for (let structure of structures) {
+                    if (structure.hits / structure.hitsMax < percentage) {
+                        // if it's a road, check to see if we've walked over it recently before repairing it
+                        if (structure.structureType == STRUCTURE_ROAD) {
+                            let memval = creep.rdMemval();
+                            if (creep.room.memory.roads[memval]) {
+                                target = structure;
+                                console.log("fixing road at " + memval);
+                                delete creep.room.memory.roads[memval];
+                                break;
+                            }
+                        // it's not a road, just fix it
+                        } else {
+                            target = structure;
+                            break;
+                        }
+                    }
+                }
+
+                // if there is one
+                if (target != undefined) {
+                    // break the loop
+                    break;
+                }
+            }
+
+            // if we find a structure that has to be repaired
+            if (target != undefined) {
+                // try to repair it, if not in range
+                if (creep.repair(target) == ERR_NOT_IN_RANGE) {
+                    // move towards it
+                    creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
                 }
             }
             // if we can't fine one

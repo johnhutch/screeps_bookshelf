@@ -2,7 +2,9 @@ var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder
 
 Structure.prototype.notify =
     function (name, creepRole) {
-        console.log(this.name + " spawned new " + creepRole);
+        console.log("******* " + this.name + " spawned new " + creepRole + " *******" );
+        let storage = this.room.storage != undefined ? this.room.storage.store[RESOURCE_ENERGY] : 0;
+        console.log("Energy in storage: " + storage);
     };
 
 Structure.prototype.findContaineredSourceId =
@@ -114,7 +116,8 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                 numberOfLongDistanceHarvesters[roomName] = _.sum(Game.creeps, (c) =>
                     c.memory.role == 'longDistanceHarvester' && c.memory.target == roomName)
 
-                if (numberOfLongDistanceHarvesters[roomName] < this.memory.minLongDistanceHarvesters[roomName]) {
+                if ( (numberOfLongDistanceHarvesters[roomName] < this.memory.minLongDistanceHarvesters[roomName])
+                  && (currentEnergy > 500) ) {
                     name = this.createLongDistanceHarvester(currentEnergy, 2, room.name, roomName, 0);
                     creepRole = "LDH";
                 }
@@ -124,9 +127,12 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         // print name to console if spawning was a success
         if (name == 0) {
             this.notify(name, creepRole);
+
+            /*
             for (let role of listOfRoles) {
                 console.log(role + ": " + numberOfCreeps[role]);
             }
+            */
         }
     };
 
@@ -140,7 +146,7 @@ StructureSpawn.prototype.createCustomCreep =
         // create a balanced body as big as possible with the given energy
         var numberOfParts = Math.floor(energy / 200);
         // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor(15 / 3));
+        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
         var body = [];
         for (let i = 0; i < numberOfParts; i++) {
             body.push(WORK);
@@ -192,8 +198,8 @@ StructureSpawn.prototype.createLongDistanceHarvester =
         energy -= 150 * numberOfWorkParts;
 
         var numberOfParts = Math.floor(energy / 100);
-        // make sure the creep is not too big (more than 30 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor((30 - numberOfWorkParts * 2) / 2));
+        // make sure the creep is not too big (more than 15 parts)
+        numberOfParts = Math.min(numberOfParts, Math.floor((15 - numberOfWorkParts * 2) / 2));
         for (let i = 0; i < numberOfParts; i++) {
             body.push(CARRY);
         }
