@@ -24,15 +24,27 @@ Creep.prototype.rdMemval =
 
 Creep.prototype.buildRoad =
     function () {
-        // if this space doesn't have a road
-        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType != STRUCTURE_ROAD) } ) == false ) {
-            memval = Creep.rdMemval;
+        // in case this is a brand new room, initialize memory.cowpaths
+        if (this.room.memory.cowpaths == undefined) {
+            this.room.memory.cowpaths = {};
+        }
+        if (this.room.memory.roads == undefined) {
+            this.room.memory.roads = {};
+        }
 
-            // in case this is a brand new room, initialize memory.cowpaths
-            if (this.room.memory.cowpaths == undefined) {
-                this.room.memory.cowpaths = {};
+        // in case this is a brand new room, initialize memory.roads
+        memval = this.rdMemval();
+
+        // check to see if this space as a road
+        let myStructs = this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType = STRUCTURE_ROAD) } ); 
+
+        // if this space already has a road
+        if (myStructs) {
+            // if this is a space UPON WHICH WE HATH NEVER TROD
+            if (this.room.memory.roads[memval] == undefined) {
+                this.room.memory.roads[memval] = true;
             }
-
+        } else {
             // if this is a space UPON WHICH WE HATH NEVER TROD
             if (this.room.memory.cowpaths[memval] == undefined) {
                 this.room.memory.cowpaths[memval] = 1;
@@ -48,18 +60,6 @@ Creep.prototype.buildRoad =
                 }
             }
         } 
-        // if this space already has a road
-        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ) == false) {
-            // in case this is a brand new room, initialize memory.roads
-            if (this.room.memory.roads == undefined) {
-                this.room.memory.roads = {};
-            }
-
-            // if this is a space UPON WHICH WE HATH NEVER TROD
-            if (this.room.memory.roads[memval] == undefined) {
-                this.room.memory.roads[memval] = true;
-            }
-        }
     };
 
 /** @function 

@@ -28,10 +28,9 @@ module.exports = {
                     if (structure.hits / structure.hitsMax < percentage) {
                         // if it's a road, check to see if we've walked over it recently before repairing it
                         if (structure.structureType == STRUCTURE_ROAD) {
-                            let memval = creep.rdMemval();
+                            let memval = structure.rdMemval();
                             if (creep.room.memory.roads[memval]) {
                                 target = structure;
-                                console.log("fixing road at " + memval);
                                 delete creep.room.memory.roads[memval];
                                 break;
                             }

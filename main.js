@@ -1,6 +1,7 @@
 require('prototype.creep');
 require('prototype.spawn');
 require('prototype.tower');
+require('prototype.road');
 
 var destroyAllRoadConstruction = function(roomName) {
     var roads = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES, { filter: (structure) => { return (structure.structureType == STRUCTURE_ROAD) } });
