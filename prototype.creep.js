@@ -7,6 +7,7 @@ var roles = {
     fixer: require('role.fixer'),
     wallRepairer: require('role.wallRepairer'),
     rampartRepairer: require('role.rampartRepairer'),
+    claimer: require('role.claimer'),
     longDistanceHarvester: require('role.longDistanceHarvester')
 };
 
@@ -22,25 +23,39 @@ Creep.prototype.buildRoad =
             memval = "road_" + this.pos.x + "_" + this.pos.y;
 
             // in case this is a brand new room, initialize memory.roads
-            if (this.room.memory.roads == undefined) {
-                this.room.memory.roads = {};
+            if (this.room.memory.cowpaths == undefined) {
+                this.room.memory.cowpaths = {};
             }
 
             // if this is a space UPON WHICH WE HATH NEVER TROD
-            if (this.room.memory.roads[memval] == undefined) {
-                this.room.memory.roads[memval] = 1;
+            if (this.room.memory.cowpaths[memval] == undefined) {
+                this.room.memory.cowpaths[memval] = 1;
             } else {
-                this.room.memory.roads[memval]++;
+                this.room.memory.cowpaths[memval]++;
 
                 // if many creeps HATH TROD here... build a muthfuckin road
-                if (this.room.memory.roads[memval] >= 10) {
+                if (this.room.memory.cowpaths[memval] >= 10) {
                     //console.log("building a road! at: " + memval);
                     this.room.createConstructionSite(this.pos.x, this.pos.y, STRUCTURE_ROAD);
                     // and delete the memory record cause we don't need that shit anymore
-                    delete this.room.memory.roads[memval];
+                    delete this.room.memory.cowpaths[memval];
                 }
             }
         } 
+        // if this space already has a road
+        if (this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ) == false) {
+            memval = "road_" + this.pos.x + "_" + this.pos.y;
+
+            // in case this is a brand new room, initialize memory.roads
+            if (this.room.memory.roads == undefined) {
+                this.room.memory.roads = {};
+            }   
+            
+            // if this is a space UPON WHICH WE HATH NEVER TROD
+            if (this.room.memory.roads[memval] == undefined) {
+                this.room.memory.roads[memval] = true;
+            } 
+        }
     };
 
 /** @function 

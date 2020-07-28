@@ -31,6 +31,7 @@ StructureTower.prototype.make_repairs =
           var structures = this.room.find(FIND_STRUCTURES, {
               filter: (s) => (s.structureType != STRUCTURE_WALL 
                               && s.structureType != STRUCTURE_RAMPART
+                              && s.structureType != STRUCTURE_ROAD
                               && s.hits < s.hitsMax / 1.2)
           });
 
