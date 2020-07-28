@@ -95,7 +95,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                     } else {
                         name = this.createCustomCreep(currentEnergy, role);
                     }
-                    creeRole = role;
+                    creepRole = role;
                     break;
                 }
             }
