@@ -11,6 +11,14 @@ var destroyAllRoadConstruction = function(roomName) {
     }
 }
 
+var destroyAllConstruction = function(roomName) {
+    var consites = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES);
+    console.log('destroying construction ' + consites)
+    for (var i=0; i < consites.length; i++) {
+        consites[i].remove();
+    }
+}
+
 var buildNewRoads = function(roomName) {
     var targets = Game.rooms[roomName].find(FIND_STRUCTURES, {
             filter: (structure) => {
@@ -37,6 +45,7 @@ module.exports.loop = function () {
         // console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
         // buildNewRoads(name);
         //destroyAllRoadConstruction(name);
+        // destroyAllConstruction(name);
     }
 
     // clean dead creeps out of memory
