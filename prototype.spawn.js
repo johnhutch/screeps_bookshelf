@@ -11,6 +11,9 @@ Structure.prototype.findContaineredSourceId =
     function () {
         let room = this.room;
         let sources = room.find(FIND_SOURCES);
+        let extractors = room.find(FIND_STRUCTURES, {
+            filter: s => s.structureType == STRUCTURE_EXTRACTOR });
+        sources = [...sources, ...extractors];
         let creepsInRoom = room.find(FIND_MY_CREEPS);
         let sourceId = undefined;
 
@@ -23,7 +26,11 @@ Structure.prototype.findContaineredSourceId =
                 });
                 // if there is a container next to the source
                 if (containers.length > 0) {
-                    sourceId = source.id;
+                    // if this is an extractor, get the mineral source ID below it
+                    if (source.structureType && source.structureType == STRUCTURE_EXTRACTOR) {
+                        source = source.pos.lookFor(LOOK_MINERALS);
+                    }
+                    sourceId = source[0].id;
                     break;
                 }
                 // TODO: else => create a container on a valid square next to the source

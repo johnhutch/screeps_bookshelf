@@ -32,7 +32,6 @@ StructureTower.prototype.make_repairs =
           // find all potential structures that need a bit more than a tiny bit of fixing
           let structures = this.room.find(FIND_STRUCTURES, {
               filter: (s) => (s.structureType != STRUCTURE_WALL 
-                              && s.structureType != STRUCTURE_RAMPART
                               && s.structureType != STRUCTURE_ROAD
                               && s.hits < s.hitsMax / 1.2)
           });
