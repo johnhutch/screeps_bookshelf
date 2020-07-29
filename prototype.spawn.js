@@ -137,6 +137,27 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             }
         }
 
+        // if none of the above caused a spawn command check for LongDistanceHarvesters
+        let numberOfLongDistanceUpgraders= {};
+        if (name == undefined) {
+            // if we don't have our min LDU object
+            // (minLDH object is a list of roomnames which contain their min LDH counts)
+            if (this.memory.minLongDistanceUpgraders == undefined) {
+                this.memory.minLongDistanceUpgraders = {};
+            }
+            // count the number of long distance harvesters globally
+            for (let roomName in this.memory.minLongDistanceUpgraders) {
+                numberOfLongDistanceUpgraders[roomName] = _.sum(Game.creeps, (c) =>
+                    c.memory.role == 'upgrader' && c.memory.target == roomName)
+
+                if ( (numberOfLongDistanceUpgraders[roomName] < this.memory.minLongDistanceUpgraders[roomName])
+                  && (currentEnergy > 500) ) {
+                    name = this.createLongDistanceUpgraders(currentEnergy, 2, room.name, roomName);
+                    creepRole = "LDU";
+                }
+            }
+        }
+
         // print name to console if spawning was a success
         if (name == 0) {
             this.notify(name, creepRole);
@@ -233,6 +254,40 @@ StructureSpawn.prototype.createLongDistanceHarvester =
             home: home,
             target: target,
             sourceIndex: sourceIndex,
+            working: false
+        }});
+    };
+
+StructureSpawn.prototype.createLongDistanceUpgraders =
+    function (energy, numberOfWorkParts, home, target) {
+        // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
+        if (energy < 400) {
+          // can't create a creep. dump out.
+          return;
+        }
+        // create a balanced body as big as possible with the given energy
+        var numberOfParts = Math.floor(energy / 200);
+        // make sure the creep is not too big (more than 15 parts)
+        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
+        var body = [];
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(WORK);
+        }
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(CARRY);
+        }
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(MOVE);
+        }
+        for (let i = 0; i < numberOfWorkParts; i++) {
+            body.push(WORK);
+        }
+
+        // create creep with the created body
+        return this.spawnCreep(body, "longDistanceUpgrader" + '_' + Game.time, { memory: {
+            role: 'upgrader',
+            home: home,
+            target: target,
             working: false
         }});
     };

@@ -38,7 +38,7 @@ StructureTower.prototype.make_repairs =
           });
           if (structures == "") {
               // see if we have any brand new ramparts to keep alive
-              let structures = this.room.find(FIND_STRUCTURES, {
+              structures = this.room.find(FIND_STRUCTURES, {
                   filter: (s) => (s.structureType == STRUCTURE_RAMPART
                                && s.hits < 5000)
               });
