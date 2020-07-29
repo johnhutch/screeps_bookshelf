@@ -23,23 +23,23 @@ StructureTower.prototype.make_repairs =
         // if tower has more than half energy (i.e., energy to spare)
         // and the room is at full capacity
         // and no one's attacking
-        if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
-          && (this.room.energyCapacityAvailable === this.room.energyAvailable)
-          && (hostile == undefined) ) {
+        if (hostile == undefined) {
 
           let target = undefined;
 
-          // find all potential structures that need a bit more than a tiny bit of fixing
-          let structures = this.room.find(FIND_STRUCTURES, {
-              filter: (s) => (s.structureType != STRUCTURE_WALL 
-                              && s.structureType != STRUCTURE_ROAD
-                              && s.hits < s.hitsMax / 1.2)
+          // see if we have any brand new ramparts to keep alive
+          structures = this.room.find(FIND_STRUCTURES, {
+              filter: (s) => (s.structureType == STRUCTURE_RAMPART
+                            && s.hits < 1000)
           });
-          if (structures == "") {
-              // see if we have any brand new ramparts to keep alive
-              structures = this.room.find(FIND_STRUCTURES, {
-                  filter: (s) => (s.structureType == STRUCTURE_RAMPART
-                               && s.hits < 5000)
+          if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
+            && (this.room.energyCapacityAvailable === this.room.energyAvailable)
+            && (structures == "")) {
+              // find all potential structures that need a bit more than a tiny bit of fixing
+              let structures = this.room.find(FIND_STRUCTURES, {
+                  filter: (s) => (s.structureType != STRUCTURE_WALL 
+                                  && s.structureType != STRUCTURE_ROAD
+                                  && s.hits < s.hitsMax / 1.2)
               });
           }
 
