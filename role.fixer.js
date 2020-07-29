@@ -13,33 +13,31 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
+            let target = undefined;
+
             // find all ramparts in the room
-            var structures = creep.room.find(FIND_STRUCTURES, {
+            let structures = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => (s.structureType != STRUCTURE_RAMPART
                              && s.structureType != STRUCTURE_WALL)
             });
+            if (structures) {
+                structures = _.sortBy(structures, (s) => { return s.hits  });
+            }
 
-            var target = undefined;
-
-            // loop with increasing percentages
-            for (let percentage = 0.05; percentage <= 1; percentage = percentage + 0.05){
-                // find a structure with less than percentage hits
-                for (let structure of structures) {
-                    if (structure.hits / structure.hitsMax < percentage) {
-                        // if it's a road, check to see if we've walked over it recently before repairing it
-                        if (structure.structureType == STRUCTURE_ROAD) {
-                            let memval = structure.rdMemval();
-                            if (creep.room.memory.roads[memval]) {
-                                target = structure;
-                                delete creep.room.memory.roads[memval];
-                                break;
-                            }
-                        // it's not a road, just fix it
-                        } else {
-                            target = structure;
-                            break;
-                        }
+            // loop through to find a target to repair
+            for (s in structures) {
+                // if it's a road, check to see if we've walked over it recently before repairing it
+                if (s.structureType == STRUCTURE_ROAD) {
+                    let memval = s.rdMemval();
+                    if (creep.room.memory.roads[memval]) {
+                        target = s;
+                        delete creep.room.memory.roads[memval];
+                        break;
                     }
+                } else {
+                    // it's not a road, just fix it
+                    target = s;
+                    break;
                 }
 
                 // if there is one

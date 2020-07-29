@@ -27,36 +27,32 @@ StructureTower.prototype.make_repairs =
           && (this.room.energyCapacityAvailable === this.room.energyAvailable)
           && (hostile == undefined) ) {
 
+          let target = undefined;
+
           // find all potential structures that need a bit more than a tiny bit of fixing
-          var structures = this.room.find(FIND_STRUCTURES, {
+          let structures = this.room.find(FIND_STRUCTURES, {
               filter: (s) => (s.structureType != STRUCTURE_WALL 
                               && s.structureType != STRUCTURE_RAMPART
                               && s.structureType != STRUCTURE_ROAD
                               && s.hits < s.hitsMax / 1.2)
           });
+          if (structures == "") {
+              // see if we have any brand new ramparts to keep alive
+              let structures = this.room.find(FIND_STRUCTURES, {
+                  filter: (s) => (s.structureType == STRUCTURE_RAMPART
+                               && s.hits < 5000)
+              });
+          }
 
-          var target = undefined;
-
-          // loop with increasing percentages
-          for (let percentage = 0.05; percentage <= 1; percentage = percentage + 0.05){
-              // find a structure with less than percentage hits
-              for (let structure of structures) {
-                  if (structure.hits / structure.hitsMax < percentage) {
-                      target = structure;
-                      break;
-                  }
-              }
-
-              // if there is one
-              if (target != undefined) {
-                  // break the loop
-                  break;
-              }
+          if (structures) {
+              structures = _.sortBy(structures, (s) => { return s.hits  });
+              target = structures[0];
           }
 
           // if we find a structure that has to be repaired
           if (target != undefined) {
-            this.repair(target)
+              this.repair(target)
+          } else {
           }
         }
     };

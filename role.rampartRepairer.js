@@ -17,28 +17,15 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
+            var target = undefined;
+
             // find all ramparts in the room
             var ramparts = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => s.structureType == STRUCTURE_RAMPART
             });
-
-            var target = undefined;
-
-            // loop with increasing percentages
-            for (let percentage = 0.05; percentage <= 1; percentage = percentage + 0.05){
-                // find a rampart with less than percentage hits
-                for (let rampart of ramparts) {
-                    if (rampart.hits / rampart.hitsMax < percentage) {
-                        target = rampart;
-                        break;
-                    }
-                }
-
-                // if there is one
-                if (target != undefined) {
-                    // break the loop
-                    break;
-                }
+            if (ramparts) {
+                ramparts = _.sortBy(ramparts, (r) => { return r.hits  });
+                target = ramparts[0];
             }
 
             // if we find a rampart that has to be repaired
@@ -49,9 +36,8 @@ module.exports = {
                     creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
                 }
             }
-            // if we can't fine one
             else {
-                // look for construction sites
+                // if we can't fine one look for construction sites
                 roleBuilder.run(creep);
             }
         }

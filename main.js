@@ -36,7 +36,7 @@ module.exports.loop = function () {
     for(var name in Game.rooms) {
         // console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
         // buildNewRoads(name);
-        // destroyAllRoadConstruction(name);
+        //destroyAllRoadConstruction(name);
     }
 
     // clean dead creeps out of memory
