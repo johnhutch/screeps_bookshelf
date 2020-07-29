@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'miner', 'hauler', 'upgrader', 'fixer', 'builder', 'wallRepairer', 'rampartRepairer'];
+var listOfRoles = ['harvester', 'miner', 'hauler', 'claimer', 'upgrader', 'fixer', 'builder', 'wallRepairer', 'rampartRepairer'];
 
 Structure.prototype.notify =
     function (name, creepRole) {
@@ -91,7 +91,20 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         // if none of the above caused a spawn command check for other roles
         if (name == undefined) {
             for (let role of listOfRoles) {
-                if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
+                // check for claim order
+                if (role == 'claimer' 
+                 && this.memory.claimRoom != undefined 
+                 && room.energyAvailable >= 650) {
+                    // try to spawn a claimer
+                    name = this.createClaimer(this.memory.claimRoom);
+                    creepRole = "claimer";
+                    // if that worked
+                    if (name == 0) {
+                        // delete the claim order
+                        delete this.memory.claimRoom;
+                    }
+                }
+                else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
                     if (role == 'hauler') {
                         name = this.createHauler(150);
                     } else {
@@ -102,7 +115,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                 }
             }
         }
-      //
+
         // if none of the above caused a spawn command check for LongDistanceHarvesters
         let numberOfLongDistanceHarvesters = {};
         if (name == undefined) {
@@ -184,6 +197,13 @@ StructureSpawn.prototype.createHauler =
 
         // create creep with the created body and the role 'hauler'
         return this.spawnCreep(body, 'hauler_' + Game.time, {memory: { role: 'hauler', working: false }});
+    };
+
+// create a new function for StructureSpawn
+StructureSpawn.prototype.createClaimer =
+    function (target) {
+        console.log("creating claimer? with target: " + target);
+        return this.spawnCreep([CLAIM, MOVE], 'claimer_' + Game.time, {memory: { role: 'claimer', target: target }});
     };
 
 StructureSpawn.prototype.createLongDistanceHarvester =
