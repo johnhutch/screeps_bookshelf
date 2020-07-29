@@ -18,7 +18,8 @@ module.exports = {
             // find all ramparts in the room
             let structures = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => (s.structureType != STRUCTURE_RAMPART
-                             && s.structureType != STRUCTURE_WALL)
+                             && s.structureType != STRUCTURE_WALL
+                             && s.hits < s.hitsMax / 1.2)
             });
             if (structures) {
                 structures = _.sortBy(structures, (s) => { return s.hits  });
@@ -32,12 +33,10 @@ module.exports = {
                     if (creep.room.memory.roads[memval]) {
                         target = s;
                         delete creep.room.memory.roads[memval];
-                        break;
                     }
                 } else {
                     // it's not a road, just fix it
                     target = s;
-                    break;
                 }
 
                 // if there is one
