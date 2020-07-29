@@ -6,7 +6,7 @@ var roleUpgrader = {
             creep.getEnergy(true, false);
         }
         else {
-            if(creep.memory.home && (creep.memory.home != creep.room.name)) {
+            if(creep.memory.target && (creep.memory.target != creep.room.name)) {
                 var exit = creep.room.findExitTo(creep.memory.home);
                 creep.moveTo(creep.pos.findClosestByRange(exit));
             } else if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
