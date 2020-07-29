@@ -22,6 +22,33 @@ Creep.prototype.rdMemval =
         return memval;
     };
 
+Creep.findContainerResourceType = 
+    function (container) {
+        // assume it's a regular energy source
+        let resourceType = RESOURCE_ENERGY;
+
+        // find minerals in range of the container
+        // TODO: is there a scenario where you can have a container 1 space away from
+          // a source AND a mineral?
+        let nearbyMinerals = source.pos.findInRange(FIND_MINERALS, 1);
+        if (nearbyMinerals.length > 0) {
+            resourceType = nearbyMinerals[0].mineralType;
+        }
+        return resourceType;
+    };
+
+Creep.prototype.transferEverything =
+    function (structure) { 
+        let result = undefined;
+        result = this.transfer(structure, RESOURCE_ENERGY);
+        if (result == ERR_NOT_IN_RANGE) {
+            return result;
+        } else {
+            // try other materials
+            return result;
+        }
+    };
+
 Creep.prototype.buildRoad =
     function () {
         // in case this is a brand new room, initialize memory.cowpaths
@@ -39,26 +66,32 @@ Creep.prototype.buildRoad =
         let myStructs = this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType = STRUCTURE_ROAD) } ); 
 
         // if this space already has a road
-        if (myStructs) {
+        if (myStructs.length > 0) {
             // if this is a space UPON WHICH WE HATH NEVER TROD
             if (this.room.memory.roads[memval] == undefined) {
                 this.room.memory.roads[memval] = true;
             }
         } else {
             // if this is a space UPON WHICH WE HATH NEVER TROD
+            err = "cowpath " + memval;
             if (this.room.memory.cowpaths[memval] == undefined) {
                 this.room.memory.cowpaths[memval] = 1;
+                err = err + " is brand new to me so I'm setting it at a 1."
             } else {
+                err = err + " has been seen so I changed its " + this.room.memory.cowpaths[memval];
                 this.room.memory.cowpaths[memval]++;
+                err = err + " to a " + this.room.memory.cowpaths[memval];
 
                 // if many creeps HATH TROD here... build a muthfuckin road
                 if (this.room.memory.cowpaths[memval] >= 10) {
+                    err = + " and now its over 10!";
                     //console.log("building a road! at: " + memval);
                     this.room.createConstructionSite(this.pos.x, this.pos.y, STRUCTURE_ROAD);
                     // and delete the memory record cause we don't need that shit anymore
                     delete this.room.memory.cowpaths[memval];
                 }
             }
+            //console.log(err);
         } 
     };
 

@@ -1,7 +1,7 @@
 module.exports = {
     run: function(creep) {
 
-        //creep.buildRoad();
+        creep.buildRoad();
 
         // if creep is bringing energy to a structure but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {

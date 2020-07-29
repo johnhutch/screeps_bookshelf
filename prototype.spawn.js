@@ -44,6 +44,9 @@ Structure.prototype.findContaineredSourceId =
 StructureSpawn.prototype.spawnCreepsIfNecessary =
     function () {
         let room = this.room;
+        if (this.memory.minCreeps == undefined) { 
+            this.memory.minCreeps = {};
+        }
 
         // init creep count defaults if they're not set
         for (let role of listOfRoles) {
@@ -73,7 +76,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             // if there are still miners or enough energy in Storage left
             if (numberOfCreeps['miner'] > 0 ||
                 (room.storage != undefined && room.storage.store[RESOURCE_ENERGY] >= 150 + 550)) {
-                name = this.createHauler(150);
+                name = this.createHauler(150, RESOURCE_ENERGY);
                 creepRole = "hauler";
             }
             // if there is no miner and not enough energy in Storage left
@@ -109,10 +112,9 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                         // delete the claim order
                         delete this.memory.claimRoom;
                     }
-                }
-                else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
+                } else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
                     if (role == 'hauler') {
-                        name = this.createHauler(150);
+                        name = this.createHauler(150, RESOURCE_ENERGY);
                     } else {
                         name = this.createCustomCreep(currentEnergy, role);
                     }
@@ -207,7 +209,7 @@ StructureSpawn.prototype.createCustomCreep =
         // create a balanced body as big as possible with the given energy
         var numberOfParts = Math.floor(energy / 200);
         // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
+        numberOfParts = Math.min(numberOfParts, Math.floor(15 / 3));
         var body = [];
         for (let i = 0; i < numberOfParts; i++) {
             body.push(WORK);
@@ -230,7 +232,7 @@ StructureSpawn.prototype.createMiner =
     };
 
 StructureSpawn.prototype.createHauler =
-    function (energy) {
+    function (energy, resourceType) {
         // create a body with twice as many CARRY as MOVE parts
         var numberOfParts = Math.floor(energy / 150);
         // make sure the creep is not too big (more than 6 parts)
@@ -244,7 +246,7 @@ StructureSpawn.prototype.createHauler =
         }
 
         // create creep with the created body and the role 'hauler'
-        return this.spawnCreep(body, 'hauler_' + Game.time, {memory: { role: 'hauler', working: false }});
+        return this.spawnCreep(body, 'hauler_' + Game.time, {memory: { role: 'hauler', working: false, resourceType: resourceType }});
     };
 
 // create a new function for StructureSpawn

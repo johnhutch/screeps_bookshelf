@@ -6,12 +6,12 @@ module.exports = {
         creep.buildRoad();
 
         // if creep is bringing energy to a structure but has no energy left
-        if (creep.memory.working == true && creep.carry.energy == 0) {
+        if (creep.memory.working == true && _.sum(creep.store) == 0) {
             // switch state
             creep.memory.working = false;
         }
         // if creep is harvesting energy but is full
-        else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
+        else if (creep.memory.working == false && _.sum(creep.store) == creep.store.getCapacity() ) {
             // switch state
             creep.memory.working = true;
         }
@@ -26,14 +26,15 @@ module.exports = {
                              && s.energy < s.energyCapacity
             });
 
-            if (structure == undefined) {
+            if (structure == undefined
+             || creep.store.getUsedCapacity([RESOURCE_ENERGY]) == 0) {
                 structure = creep.room.storage;
             }
 
             // if we found one
             if (structure != undefined) {
                 // try to transfer energy, if it is not in range
-                if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if (creep.transfer(structure, _.findKey(creep.store)) == ERR_NOT_IN_RANGE) {
                     // move towards it
                     creep.moveTo(structure, {visualizePathStyle: {stroke: '#ff0000'}});
                 }
@@ -42,14 +43,12 @@ module.exports = {
         // if creep is supposed to get energy
         else {
             // look for dropped resources from dead creeps
-            let dropped_resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES, {
-                filter: r => (r.resourceType == RESOURCE_ENERGY)
-            });
+            let dropped_resource = creep.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
             if (dropped_resource == undefined) {
                 // find closest container
                 container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                     filter: s => (s.structureType == STRUCTURE_CONTAINER)
-                              && s.store[RESOURCE_ENERGY] > 0
+                              && s.store.getFreeCapacity() < s.store.getCapacity()
                 });
                 if (container == undefined) {
                     container = creep.room.storage;
@@ -58,7 +57,7 @@ module.exports = {
                 // if one was found
                 if (container != undefined) {
                     // try to withdraw energy, if the container is not in range
-                    if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    if (creep.withdraw(container, _.findKey(container.store)) == ERR_NOT_IN_RANGE) {
                         // move towards it
                         creep.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
                     }

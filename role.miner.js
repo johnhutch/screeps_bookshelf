@@ -5,16 +5,18 @@ var roleMiner = {
         if (!creep.memory.sourceId) {
             // couldn't find a source. Go find one. 
             let err = "Miner has no no sourceId in memory.";
-            sourceId = creep.room.spawn.findContaineredSourceId();
-            if (sourceId) {
-                creep.memory.sourceId = sourceId;
-                err = err + " Assigned him " + sourceId;
-            } else {
-                err = err + " Couldin't find one to assign him. Waiting...";
-            }
-            console.log(err);
+            let mySpawn = creep.room.find(FIND_MY_SPAWNS);
+            if (mySpawn.length > 0) {
+                sourceId = mySpawn[0].findContaineredSourceId();
+                if (sourceId) {
+                    creep.memory.sourceId = sourceId;
+                    err = err + " Assigned him " + sourceId;
+                } else {
+                    err = err + " Couldin't find one to assign him. Waiting...";
+                }
+                //console.log(err);
+            } 
         } else {
-
             let source = Game.getObjectById(creep.memory.sourceId);
             // find container next to source
             let container = source.pos.findInRange(FIND_STRUCTURES, 1, {

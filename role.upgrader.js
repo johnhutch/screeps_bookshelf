@@ -2,6 +2,7 @@ var roleUpgrader = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
+      creep.buildRoad();
 	    if(creep.store[RESOURCE_ENERGY] == 0) {
             if(creep.memory.target == undefined) {
                 creep.getEnergy(true, false);
