@@ -18,6 +18,11 @@ Structure.prototype.findContaineredSourceId =
         let sourceId = undefined;
 
         for (let source of sources) {
+            // if this is an extractor, get the mineral source ID below it
+            if (source.structureType && source.structureType == STRUCTURE_EXTRACTOR) {
+                source = source.pos.lookFor(LOOK_MINERALS)[0];
+            }
+
             // if the source has no miner
             if (!_.some(creepsInRoom, c => c.memory.role == 'miner' && c.memory.sourceId == source.id)) {
                 // check whether or not the source has a container
@@ -26,10 +31,6 @@ Structure.prototype.findContaineredSourceId =
                 });
                 // if there is a container next to the source
                 if (containers.length > 0) {
-                    // if this is an extractor, get the mineral source ID below it
-                    if (source.structureType && source.structureType == STRUCTURE_EXTRACTOR) {
-                        source = source.pos.lookFor(LOOK_MINERALS)[0];
-                    }
                     sourceId = source.id;
                     break;
                 }
@@ -72,13 +73,11 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             // if there are still miners or enough energy in Storage left
             if (numberOfCreeps['miner'] > 0 ||
                 (room.storage != undefined && room.storage.store[RESOURCE_ENERGY] >= 150 + 550)) {
-                console.log("No harvesters or haulers, but we have a miner or some stored energy, so creating a hauler");
                 name = this.createHauler(150);
                 creepRole = "hauler";
             }
             // if there is no miner and not enough energy in Storage left
             else {
-                console.log("No harvester, haulers, miners, or stored energy. Created a harvester");
                 name = this.createCustomCreep(room.energyAvailable, 'harvester');
                 creepRole = "harvester";
             }
@@ -140,6 +139,27 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                   && (currentEnergy > 500) ) {
                     name = this.createLongDistanceHarvester(currentEnergy, 2, room.name, roomName, 0);
                     creepRole = "LDH";
+                }
+            }
+        }
+      //
+        // if none of the above caused a spawn command check for LongDistanceBuilders
+        let numberOfLongDistanceBuilders = {};
+        if (name == undefined) {
+            // if we don't have our min LDH object
+            // (minLDH object is a list of roomnames which contain their min LDH counts)
+            if (this.memory.minLongDistanceBuilders == undefined) {
+                this.memory.minLongDistanceBuilders = {};
+            }
+            // count the number of long distance harvesters globally
+            for (let roomName in this.memory.minLongDistanceBuilders) {
+                numberOfLongDistanceBuilders[roomName] = _.sum(Game.creeps, (c) =>
+                    c.memory.role == 'builder' && c.memory.target == roomName)
+
+                if ( (numberOfLongDistanceBuilders[roomName] < this.memory.minLongDistanceBuilders[roomName])
+                  && (currentEnergy > 500) ) {
+                    name = this.createLongDistanceBuilders(currentEnergy, 2, room.name, roomName);
+                    creepRole = "LDB";
                 }
             }
         }
@@ -293,6 +313,40 @@ StructureSpawn.prototype.createLongDistanceUpgraders =
         // create creep with the created body
         return this.spawnCreep(body, "longDistanceUpgrader" + '_' + Game.time, { memory: {
             role: 'upgrader',
+            home: home,
+            target: target,
+            working: false
+        }});
+    };
+
+StructureSpawn.prototype.createLongDistanceBuilders =
+    function (energy, numberOfWorkParts, home, target) {
+        // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
+        if (energy < 400) {
+          // can't create a creep. dump out.
+          return;
+        }
+        // create a balanced body as big as possible with the given energy
+        var numberOfParts = Math.floor(energy / 200);
+        // make sure the creep is not too big (more than 15 parts)
+        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
+        var body = [];
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(WORK);
+        }
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(CARRY);
+        }
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(MOVE);
+        }
+        for (let i = 0; i < numberOfWorkParts; i++) {
+            body.push(WORK);
+        }
+
+        // create creep with the created body
+        return this.spawnCreep(body, "longDistanceBuilder" + '_' + Game.time, { memory: {
+            role: 'builder',
             home: home,
             target: target,
             working: false
