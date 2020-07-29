@@ -3,7 +3,11 @@ var roleUpgrader = {
     /** @param {Creep} creep **/
     run: function(creep) {
 	    if(creep.store[RESOURCE_ENERGY] == 0) {
-            creep.getEnergy(true, false);
+            if(creep.memory.target == undefined) {
+                creep.getEnergy(true, false);
+            } else {
+                creep.getEnergy(true, true);
+            }
         }
         else {
             if(creep.memory.target && (creep.memory.target != creep.room.name)) {

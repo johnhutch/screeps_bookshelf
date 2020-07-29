@@ -28,9 +28,9 @@ Structure.prototype.findContaineredSourceId =
                 if (containers.length > 0) {
                     // if this is an extractor, get the mineral source ID below it
                     if (source.structureType && source.structureType == STRUCTURE_EXTRACTOR) {
-                        source = source.pos.lookFor(LOOK_MINERALS);
+                        source = source.pos.lookFor(LOOK_MINERALS)[0];
                     }
-                    sourceId = source[0].id;
+                    sourceId = source.id;
                     break;
                 }
                 // TODO: else => create a container on a valid square next to the source
