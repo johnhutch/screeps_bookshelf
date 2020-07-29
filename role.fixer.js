@@ -25,7 +25,7 @@ module.exports = {
             }
 
             // loop through to find a target to repair
-            for (s in structures) {
+            for (let s of structures) {
                 // if it's a road, check to see if we've walked over it recently before repairing it
                 if (s.structureType == STRUCTURE_ROAD) {
                     let memval = s.rdMemval();
