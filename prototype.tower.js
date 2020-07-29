@@ -30,7 +30,7 @@ StructureTower.prototype.make_repairs =
           // see if we have any brand new ramparts to keep alive
           structures = this.room.find(FIND_STRUCTURES, {
               filter: (s) => (s.structureType == STRUCTURE_RAMPART
-                            && s.hits < 1000)
+                            && s.hits < 400)
           });
           if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
             && (this.room.energyCapacityAvailable === this.room.energyAvailable)
