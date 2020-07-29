@@ -18,17 +18,25 @@ module.exports = {
 
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
-            // find closest spawn, extension or tower which is not full
-            var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                             || s.structureType == STRUCTURE_EXTENSION
-                             || s.structureType == STRUCTURE_TOWER)
-                             && s.energy < s.energyCapacity
-            });
+            var structure = undefined;
 
-            if (structure == undefined
-             || creep.store.getUsedCapacity([RESOURCE_ENERGY]) == 0) {
+            // if we don't have any energy to deposit, just minerals, head to storage
+            if (creep.store[RESOURCE_ENERGY] == 0) {
                 structure = creep.room.storage;
+            } else {
+                // we've got energy to deposit, so
+                // find closest spawn, extension or tower which is not full
+                var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
+                                || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_TOWER)
+                                && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+
+                // if everything's full, look for a terminal to dump it
+                if (structure == undefined) {
+                    structure = creep.room.storage;
+                }
             }
 
             // if we found one
@@ -50,8 +58,17 @@ module.exports = {
                     filter: s => (s.structureType == STRUCTURE_CONTAINER)
                               && s.store.getFreeCapacity() < s.store.getCapacity()
                 });
+
+                // if we didn't find a container with resources to be picked up
                 if (container == undefined) {
-                    container = creep.room.storage;
+                    // and if we have a terminal
+                    if (creep.room.terminal) {
+                        // grab some energy from storage
+                        container = creep.room.terminal
+                    } else {
+                        // otherwise, grab it from storage
+                        container = creep.room.storage;
+                    }
                 }
 
                 // if one was found

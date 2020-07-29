@@ -30,8 +30,11 @@ StructureTower.prototype.make_repairs =
           // see if we have any brand new ramparts to keep alive
           structures = this.room.find(FIND_STRUCTURES, {
               filter: (s) => (s.structureType == STRUCTURE_RAMPART
-                            && s.hits < 400)
+                            && s.hits < 1000)
           });
+
+
+          /* commenting out so we can actually store some energy in storage/terminal
           if ( (this.store.getUsedCapacity(RESOURCE_ENERGY) > this.store.getCapacity(RESOURCE_ENERGY) / 2)
             && (this.room.energyCapacityAvailable === this.room.energyAvailable)
             && (structures == "")) {
@@ -42,7 +45,7 @@ StructureTower.prototype.make_repairs =
                                   && s.hits < s.hitsMax / 1.2)
               });
           }
-
+          */
           if (structures) {
               structures = _.sortBy(structures, (s) => { return s.hits  });
               target = structures[0];

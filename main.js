@@ -44,7 +44,7 @@ module.exports.loop = function () {
     for(var name in Game.rooms) {
         // console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
         // buildNewRoads(name);
-        //destroyAllRoadConstruction(name);
+        // destroyAllRoadConstruction(name);
         // destroyAllConstruction(name);
     }
 
@@ -65,6 +65,7 @@ module.exports.loop = function () {
     // ferda creeps
     for (let name in Game.creeps) {
         Game.creeps[name].runRole();
+        // TODO; include an "if hostiles present, runRole attacker/defender" bit
     }
 
     // ferda towers

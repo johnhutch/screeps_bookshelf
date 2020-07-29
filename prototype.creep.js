@@ -51,6 +51,9 @@ Creep.prototype.transferEverything =
 
 Creep.prototype.buildRoad =
     function () {
+        if (!this.room.memory.buildRoads) {
+            return false;
+        }
         // in case this is a brand new room, initialize memory.cowpaths
         if (this.room.memory.cowpaths == undefined) {
             this.room.memory.cowpaths = {};
