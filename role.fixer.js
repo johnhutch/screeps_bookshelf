@@ -19,6 +19,7 @@ module.exports = {
             let structures = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => (s.structureType != STRUCTURE_RAMPART
                              && s.structureType != STRUCTURE_WALL
+                             && s.structureType != STRUCTURE_ROAD
                              && s.hits < s.hitsMax / 1.2)
             });
             if (structures) {

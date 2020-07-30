@@ -47,7 +47,7 @@ module.exports.loop = function () {
         // destroyAllRoadConstruction(name);
         // destroyAllConstruction(name);
     }
-
+    
     // clean dead creeps out of memory
     for (let name in Memory.creeps) {
         // and checking if the creep is still alive
