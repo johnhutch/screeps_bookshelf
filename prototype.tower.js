@@ -29,7 +29,8 @@ StructureTower.prototype.make_repairs =
 
           // see if we have any brand new ramparts to keep alive
           structures = this.room.find(FIND_STRUCTURES, {
-              filter: (s) => (s.structureType == STRUCTURE_RAMPART
+              filter: (s) => ((s.structureType == STRUCTURE_RAMPART
+                           || s.structureType == STRUCTURE_CONTAINER)
                             && s.hits < 1000)
           });
 
