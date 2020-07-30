@@ -251,7 +251,6 @@ StructureSpawn.prototype.createMiner =
                 body.push(WORK);
             }
             body.push(MOVE);
-            console.log("energy: " + energy + "; body: " + body);
             result = this.spawnCreep(body, 'miner_' + Game.time,
                                     {memory: { role: 'miner', sourceId: sourceId }});
         }
