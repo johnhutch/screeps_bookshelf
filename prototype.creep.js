@@ -109,8 +109,10 @@ Creep.prototype.getEnergy =
         if (useContainer) {
             // find closest container
             container = this.pos.findClosestByPath(FIND_STRUCTURES, {
-                filter: s => (s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) &&
-                             s.store[RESOURCE_ENERGY] > 0
+                filter: s => (s.structureType == STRUCTURE_CONTAINER 
+                           || s.structureType == STRUCTURE_STORAGE 
+                           || s.structureType == STRUCTURE_TERMINAL)
+                           && s.store[RESOURCE_ENERGY] > 0
             });
             // if one was found
             if (container != undefined) {

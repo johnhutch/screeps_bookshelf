@@ -4,7 +4,8 @@ Structure.prototype.notify =
     function (name, creepRole) {
         console.log("******* " + this.name + " spawned new " + creepRole + " *******" );
         let storage = this.room.storage != undefined ? this.room.storage.store[RESOURCE_ENERGY] : 0;
-        console.log("Energy in storage: " + storage);
+        let terminal = this.room.terminal != undefined ? this.room.terminal.store[RESOURCE_ENERGY] : 0;
+        console.log("Energy in storage: " + storage + ". Energy in terminal: " + terminal);
     };
 
 Structure.prototype.findContaineredSourceId =

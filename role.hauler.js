@@ -33,10 +33,17 @@ module.exports = {
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
 
-                // if everything's full, look for a terminal to dump it
+                // if everything's full
                 if (structure == undefined) {
-                    structure = creep.room.storage;
+                    // look for a terminal to dump it
+                    if (creep.room.terminal) {
+                        structure = creep.room.terminal;
+                    } else  {
+                        // otherwise, throw it in storage
+                        structure = creep.room.storage;
+                    }
                 }
+
             }
 
             // if we found one
