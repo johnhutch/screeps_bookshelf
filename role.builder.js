@@ -18,7 +18,8 @@ var roleBuilder = {
               let exit = creep.room.findExitTo(creep.memory.target);
               creep.moveTo(creep.pos.findClosestByRange(exit));
           } else {
-              var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+              var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_CONTAINER })
+                  || creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
               if(target) {
                   if(creep.build(target) == ERR_NOT_IN_RANGE) {
                       creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
@@ -30,10 +31,12 @@ var roleBuilder = {
           }
 	    }
 	    else {
-            if(creep.memory.target == undefined) {
-                creep.getEnergy(true, false);
-            } else {
+            // if we're a remote builder OR if we're trying to build a container for a miner, use sources
+            if (creep.memory.target != undefined 
+             || !creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_CONTAINER })) {
                 creep.getEnergy(true, true);
+            } else {
+                creep.getEnergy(true, false);
             }
 	    }
 	}

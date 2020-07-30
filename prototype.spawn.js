@@ -8,6 +8,18 @@ Structure.prototype.notify =
         console.log("Energy in storage: " + storage + ". Energy in terminal: " + terminal);
     };
 
+Structure.prototype.turnOnEmergencyMode =
+    function () {
+        // find sources without containers
+        // build adjacent containers
+      // tell builders to use sources for energy
+      // reduce creep counts
+    };
+
+Structure.prototype.turnOnEmergencyMode =
+    function () {
+    };
+
 Structure.prototype.findContaineredSourceId =
     function () {
         let room = this.room;
