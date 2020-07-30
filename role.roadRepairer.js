@@ -1,9 +1,6 @@
 var roleBuilder = require('role.builder');
 
-// role defenseRepairer
 module.exports = {
-    // a function to run the logic for this role
-    /** @param {Creep} creep */
     run: function(creep) {
         // if creep is trying to repair something but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
@@ -20,17 +17,16 @@ module.exports = {
         if (creep.memory.working == true) {
             var target = undefined;
 
-            // find all ramparts and walls in the room
-            var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: (s) => s.structureType == STRUCTURE_RAMPART 
-                          || s.structureType == STRUCTURE_WALL
+            // find all roads in the room
+            var roads = creep.room.find(FIND_STRUCTURES, {
+                filter: (s) => s.structureType == STRUCTURE_ROAD
             });
-            if (targets) {
-                targets = _.sortBy(targets, (r) => { return r.hits  });
-                target = targets[0];
+            if (roads) {
+                roads = _.sortBy(roads, (r) => { return r.hits  });
+                target = roads[0];
             }
 
-            // if we find a rampart that has to be repaired
+            // if we find a road that has to be repaired
             if (target != undefined) {
                 // try to repair it, if not in range
                 if (creep.repair(target) == ERR_NOT_IN_RANGE) {

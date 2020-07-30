@@ -30,7 +30,7 @@ module.exports = {
                 target = targets[0];
             }
 
-            // if we find a rampart that has to be repaired
+            // if we find a rampart or wall that has to be repaired
             if (target != undefined) {
                 // try to repair it, if not in range
                 if (creep.repair(target) == ERR_NOT_IN_RANGE) {
