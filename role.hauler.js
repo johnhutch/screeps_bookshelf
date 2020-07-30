@@ -1,6 +1,6 @@
+var roleUpgrader = require('role.upgrader');
+// role hauler
 module.exports = {
-    // a function to run the logic for this role
-    /** @param {Creep} creep */
     run: function(creep) {
 
         creep.buildRoad();
@@ -35,8 +35,15 @@ module.exports = {
 
                 // if everything's full
                 if (structure == undefined) {
-                    // look for a terminal to dump it
-                    if (creep.room.terminal) {
+                    // look for a link to fill
+                    let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                        filter: (s) => s.structureType == STRUCTURE_LINK
+                                    && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                    });
+                    if (link != undefined) {
+                        structure = link;
+                    } else if (creep.room.terminal) {
+                        // if not, look for a terminal to dump it
                         structure = creep.room.terminal;
                     } else  {
                         // otherwise, throw it in storage

@@ -4,9 +4,9 @@ var roles = {
     builder: require('role.builder'),
     hauler: require('role.hauler'),
     miner: require('role.miner'),
-    fixer: require('role.fixer'),
     defenseRepairer: require('role.defenseRepairer'),
     roadRepairer: require('role.roadRepairer'),
+    structureRepairer: require('role.structureRepairer'),
     claimer: require('role.claimer'),
     longDistanceHarvester: require('role.longDistanceHarvester')
 };
@@ -135,6 +135,13 @@ Creep.prototype.getEnergy =
                     if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                         // move towards it
                         this.moveTo(container);
+                    }
+                } else {
+                    // look for dropped resources
+                    let droppedResource = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+                    if (this.pickup(droppedResource, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        // move towards it
+                        this.moveTo(droppedResource);
                     }
                 }
             }

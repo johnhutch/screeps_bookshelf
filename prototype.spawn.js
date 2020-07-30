@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'miner', 'hauler', 'claimer', 'upgrader', 'fixer', 'builder', 'roadRepairer', 'defenseRepairer'];
+var listOfRoles = ['harvester', 'miner', 'hauler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
 
 Structure.prototype.notify =
     function (name, creepRole) {
