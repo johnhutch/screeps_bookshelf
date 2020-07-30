@@ -1,6 +1,6 @@
 var listOfRoles = ['harvester', 'miner', 'hauler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
 
-Structure.prototype.notify =
+StructureSpawn.prototype.notify =
     function (name, creepRole) {
         console.log("******* " + this.name + " spawned new " + creepRole + " *******" );
         let storage = this.room.storage != undefined ? this.room.storage.store[RESOURCE_ENERGY] : 0;
@@ -8,7 +8,7 @@ Structure.prototype.notify =
         console.log("Energy in storage: " + storage + ". Energy in terminal: " + terminal);
     };
 
-Structure.prototype.turnOnEmergencyMode =
+StructureSpawn.prototype.turnOnEmergencyMode =
     function () {
         // find sources without containers
         // build adjacent containers
@@ -16,11 +16,11 @@ Structure.prototype.turnOnEmergencyMode =
       // reduce creep counts
     };
 
-Structure.prototype.turnOnEmergencyMode =
+StructureSpawn.prototype.turnOnEmergencyMode =
     function () {
     };
 
-Structure.prototype.findContaineredSourceId =
+StructureSpawn.prototype.findContaineredSourceId =
     function () {
         let room = this.room;
         let sources = room.find(FIND_SOURCES);
@@ -105,7 +105,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             let sourceId = this.findContaineredSourceId();
 
             if(sourceId) {
-                name = this.createMiner(sourceId);
+                name = this.createMiner(sourceId, currentEnergy);
                 creepRole = "miner";
             }
         }
@@ -239,9 +239,23 @@ StructureSpawn.prototype.createCustomCreep =
     };
 
 StructureSpawn.prototype.createMiner =
-    function (sourceId) {
-        return this.spawnCreep([WORK, WORK, WORK, WORK, WORK, MOVE], 'miner_' + Game.time,
-                                {memory: { role: 'miner', sourceId: sourceId }});
+    function (sourceId, energy) {
+        let extensions = this.room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_EXTENSION });
+        if (extensions.length > 5) {
+            result = this.spawnCreep([WORK, WORK, WORK, WORK, WORK, MOVE], 'miner_' + Game.time,
+                                    {memory: { role: 'miner', sourceId: sourceId }});
+        } else {
+            let numberOfWorks = Math.floor((energy - 50) / 100);
+            var body = [];
+            for (let i = 0; i < numberOfWorks; i++) {
+                body.push(WORK);
+            }
+            body.push(MOVE);
+            console.log("energy: " + energy + "; body: " + body);
+            result = this.spawnCreep(body, 'miner_' + Game.time,
+                                    {memory: { role: 'miner', sourceId: sourceId }});
+        }
+        return result;
     };
 
 StructureSpawn.prototype.createHauler =

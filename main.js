@@ -1,3 +1,4 @@
+require('prototype.room');
 require('prototype.creep');
 require('prototype.spawn');
 require('prototype.tower');
@@ -55,6 +56,10 @@ module.exports.loop = function () {
             // if not, delete the memory entry
             delete Memory.creeps[name];
         }
+    }
+
+    for (let roomName in Game.rooms) {
+        Game.rooms[roomName].checkForContainers();
     }
 
     // spawn some stuff maybe
