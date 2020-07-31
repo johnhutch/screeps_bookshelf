@@ -34,7 +34,7 @@ var roleBuilder = {
             // if we're a remote builder OR if we're trying to build a container for a miner, use sources
             if (creep.memory.target != undefined 
              || !creep.room.memory.hasContainers
-             || creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_CONTAINER }) != null) {
+             || creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_CONTAINER }) == null) {
                 creep.getEnergy(true, true);
             } else {
                 creep.getEnergy(true, false);
