@@ -66,7 +66,7 @@ Creep.prototype.buildRoad =
         memval = this.rdMemval();
 
         // check to see if this space as a road
-        let myStructs = this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType = STRUCTURE_ROAD) } ); 
+        let myStructs = this.pos.lookFor(LOOK_STRUCTURES, { filter: s => (s.structureType == STRUCTURE_ROAD) } ); 
 
         // if this space already has a road
         if (myStructs.length > 0) {
