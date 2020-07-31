@@ -45,6 +45,8 @@ module.exports = {
                     } else if (creep.room.terminal) {
                         // if not, look for a terminal to dump it
                         structure = creep.room.terminal;
+                    } else if (creep.room.memory.controllerContainerId != null) {
+                        structure = Game.getObjectById(creep.room.memory.controllerContainerId);
                     } else  {
                         // otherwise, throw it in storage
                         structure = creep.room.storage;
