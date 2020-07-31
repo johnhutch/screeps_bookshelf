@@ -173,6 +173,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
 
                 if ( (numberOfLongDistanceBuilders[roomName] < this.memory.minLongDistanceBuilders[roomName])
                   && (currentEnergy > 500) ) {
+                    console.log("here");
                     name = this.createLongDistanceBuilders(currentEnergy, 2, room.name, roomName);
                     creepRole = "LDB";
                 }
@@ -334,9 +335,6 @@ StructureSpawn.prototype.createLongDistanceUpgraders =
         for (let i = 0; i < numberOfParts; i++) {
             body.push(MOVE);
         }
-        for (let i = 0; i < numberOfWorkParts; i++) {
-            body.push(WORK);
-        }
 
         // create creep with the created body
         return this.spawnCreep(body, "longDistanceUpgrader" + '_' + Game.time, { memory: {
@@ -367,9 +365,6 @@ StructureSpawn.prototype.createLongDistanceBuilders =
         }
         for (let i = 0; i < numberOfParts; i++) {
             body.push(MOVE);
-        }
-        for (let i = 0; i < numberOfWorkParts; i++) {
-            body.push(WORK);
         }
 
         // create creep with the created body
