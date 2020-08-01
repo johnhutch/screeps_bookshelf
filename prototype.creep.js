@@ -4,6 +4,7 @@ var roles = {
     builder: require('role.builder'),
     hauler: require('role.hauler'),
     miner: require('role.miner'),
+    attacker: require('role.attacker'),
     defenseRepairer: require('role.defenseRepairer'),
     roadRepairer: require('role.roadRepairer'),
     structureRepairer: require('role.structureRepairer'),
@@ -104,8 +105,8 @@ Creep.prototype.buildRoad =
 Creep.prototype.getEnergy =
     function (useContainer, useSource) {
         /** @type {StructureContainer} */
-        let container;
-        let source;
+        let container = undefined;
+        let source = undefined;
 
 
         // if the creep is a builder and useSoure is true, it's likely building
@@ -121,28 +122,18 @@ Creep.prototype.getEnergy =
             }
         } else {
             // if the Creep should look for containers
-            if (useContainer) {
-                // find closest container
-                container = this.pos.findClosestByPath(FIND_STRUCTURES, {
-                    filter: s => (s.structureType == STRUCTURE_CONTAINER 
-                              || s.structureType == STRUCTURE_STORAGE 
-                              || s.structureType == STRUCTURE_TERMINAL)
-                              && s.store[RESOURCE_ENERGY] > 0
-                });
-                // if one was found
-                if (container != undefined) {
-                    // try to withdraw energy, if the container is not in range
-                    if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        // move towards it
-                        this.moveTo(container);
-                    }
-                } else {
-                    // look for dropped resources
-                    let droppedResource = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
-                    if (this.pickup(droppedResource, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        // move towards it
-                        this.moveTo(droppedResource);
-                    }
+            if (useContainer) {;
+                if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
+                    container = this.room.terminal;
+                } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
+                    container = this.room.storage;
+                } else if (container == undefined) {
+                    // find closest container
+                    container = this.pos.findClosestByPath(this.room.energySources());
+                }
+                if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    // move towards it
+                    this.moveTo(container);
                 }
             }
             // if no container was found and the Creep should look for Sources

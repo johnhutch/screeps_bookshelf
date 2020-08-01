@@ -40,12 +40,13 @@ module.exports = {
                         filter: (s) => s.structureType == STRUCTURE_LINK
                                     && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                     });
+                    let controllerContainer = Game.getObjectById(creep.room.memory.controllerContainerId);
                     if (link != undefined) {
                         structure = link;
                     } else if (creep.room.terminal) {
                         // if not, look for a terminal to dump it
                         structure = creep.room.terminal;
-                    } else if (creep.room.memory.controllerContainerId != null) {
+                    } else if (controllerContainer) {
                         structure = Game.getObjectById(creep.room.memory.controllerContainerId);
                     } else  {
                         // otherwise, throw it in storage
