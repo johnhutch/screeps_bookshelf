@@ -18,52 +18,7 @@ module.exports = {
 
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
-            var structure = undefined;
-
-            // if we don't have any energy to deposit, just minerals, head to storage
-            if (creep.store[RESOURCE_ENERGY] == 0) {
-                structure = creep.room.storage;
-            } else {
-                // we've got energy to deposit, so
-                // find closest spawn, extension or tower which is not full
-                var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                                || s.structureType == STRUCTURE_EXTENSION
-                                || s.structureType == STRUCTURE_TOWER)
-                                && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
-
-                // if everything's full
-                if (structure == undefined) {
-                    // look for a link to fill
-                    let link = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                        filter: (s) => s.structureType == STRUCTURE_LINK
-                                    && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                    });
-                    let controllerContainer = Game.getObjectById(creep.room.memory.controllerContainerId);
-                    if (link != undefined) {
-                        structure = link;
-                    } else if (creep.room.terminal) {
-                        // if not, look for a terminal to dump it
-                        structure = creep.room.terminal;
-                    } else if (controllerContainer) {
-                        structure = Game.getObjectById(creep.room.memory.controllerContainerId);
-                    } else  {
-                        // otherwise, throw it in storage
-                        structure = creep.room.storage;
-                    }
-                }
-
-            }
-
-            // if we found one
-            if (structure != undefined) {
-                // try to transfer energy, if it is not in range
-                if (creep.transfer(structure, _.findKey(creep.store)) == ERR_NOT_IN_RANGE) {
-                    // move towards it
-                    creep.moveTo(structure, {visualizePathStyle: {stroke: '#ff0000'}});
-                }
-            }
+            creep.unload();
         }
         // if creep is supposed to get energy
         else {

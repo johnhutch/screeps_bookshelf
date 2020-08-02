@@ -1,7 +1,7 @@
 module.exports = {
     run: function(creep) {
 
-        creep.buildRoad();
+        //creep.buildRoad();
 
         // if creep is bringing energy to a structure but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
@@ -46,11 +46,7 @@ module.exports = {
         else {
             // if in target room
             if (creep.room.name == creep.memory.target) {
-                var source = creep.room.find(FIND_SOURCES)[creep.memory.sourceIndex];
-
-                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(source);
-                }
+                creep.getEnergy(true,true);
             }
             // if not in target room
             else {

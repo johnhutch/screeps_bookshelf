@@ -9,6 +9,7 @@ var roles = {
     roadRepairer: require('role.roadRepairer'),
     structureRepairer: require('role.structureRepairer'),
     claimer: require('role.claimer'),
+    longDistanceSalvager: require('role.longDistanceSalvager'),
     longDistanceHarvester: require('role.longDistanceHarvester')
 };
 
@@ -47,6 +48,54 @@ Creep.prototype.transferEverything =
         } else {
             // try other materials
             return result;
+        }
+    };
+
+Creep.prototype.unload = 
+    function () {
+        let structure = undefined;
+        // if we don't have any energy to deposit, just minerals, head to storage
+        if (this.store[RESOURCE_ENERGY] == 0) {
+            structure = this.room.storage;
+        } else {
+            // we've got energy to deposit, so
+            // find closest spawn, extension or tower which is not full
+            structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                filter: (s) => (s.structureType == STRUCTURE_SPAWN
+                            || s.structureType == STRUCTURE_EXTENSION
+                            || s.structureType == STRUCTURE_TOWER)
+                            && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+            });
+
+            // if everything's full
+            if (structure == undefined) {
+                // look for a link to fill
+                let link = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                    filter: (s) => s.structureType == STRUCTURE_LINK
+                                && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+                let controllerContainer = Game.getObjectById(this.room.memory.controllerContainerId);
+                if (link != undefined) {
+                    structure = link;
+                } else if (this.room.terminal) {
+                    // if not, look for a terminal to dump it
+                    structure = this.room.terminal;
+                } else if (controllerContainer) {
+                    structure = Game.getObjectById(this.room.memory.controllerContainerId);
+                } else  {
+                    // otherwise, throw it in storage
+                    structure = this.room.storage;
+                }
+            }
+        }
+
+        // if we found one
+        if (structure != undefined) {
+            // try to transfer energy, if it is not in range
+            if (this.transfer(structure, _.findKey(this.store)) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(structure, {visualizePathStyle: {stroke: '#ff0000'}});
+            }
         }
     };
 
@@ -97,6 +146,22 @@ Creep.prototype.buildRoad =
             }
             //console.log(err);
         } 
+    };
+
+Creep.prototype.getSalvage =
+    function () {
+        let salvage = this.pos.findClosestByPath(this.room.salvageSources());
+
+        // if no container was found and the Creep should look for Sources
+        if (salvage != undefined) {
+            if (this.withdraw(salvage, _.findKey(salvage.store)) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(salvage, {visualizePathStyle: {stroke: '#ff0000'}});
+            }
+        } else {
+            // no salvage, so just become a remote harvester
+            roleLongDistanceHarvester.run(this);
+        }
     };
 
 /** @function 

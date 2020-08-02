@@ -21,6 +21,9 @@ module.exports = {
                 // move towards the controller
                 creep.moveTo(creep.room.controller);
             } 
+
+            // if the claim was successful and its sitting there not doing anything, 
+            // make it an unpgrader
         }
     }
 };

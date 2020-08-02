@@ -28,3 +28,18 @@ Room.prototype.energySources =
         let sources = [...ruins, ...dropped_resources, ...containers]
         return sources;
     };
+
+// all the sources of misc, non-energy salvage in the room
+Room.prototype.salvageSources = 
+    function () {
+        let dropped_resources = this.find(FIND_DROPPED_RESOURCES);
+        let ruins = this.find(FIND_RUINS, {
+            filter: s => (s.store.getUsedCapacity() > 0)
+        });
+        let containers = this.find(FIND_STRUCTURES, {
+            filter: s => (s.structureType == STRUCTURE_CONTAINER)
+                      && (s.store.getUsedCapacity() > 0)
+        });
+        let sources = [...ruins, ...dropped_resources, ...containers]
+        return sources;
+    };
