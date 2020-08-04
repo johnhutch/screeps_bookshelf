@@ -160,7 +160,7 @@ Creep.prototype.getSalvage =
             }
         } else {
             // no salvage, so just become a remote harvester
-            roleLongDistanceHarvester.run(this);
+            this.getEnergy(true, true);
         }
     };
 
