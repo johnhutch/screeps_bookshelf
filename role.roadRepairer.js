@@ -1,4 +1,4 @@
-var roleBuilder = require('role.builder');
+var roleFiller = require('role.filler');
 
 module.exports = {
     run: function(creep) {
@@ -17,9 +17,17 @@ module.exports = {
         if (creep.memory.working == true) {
             var target = undefined;
 
+            if (creep.room.memory.cowpaths == undefined) {
+                creep.room.memory.cowpaths = {};
+            }
+            if (creep.room.memory.roads == undefined) {
+                creep.room.memory.roads = {};
+            }
+
             // find all roads in the room
             var roads = creep.room.find(FIND_STRUCTURES, {
                 filter: (s) => s.structureType == STRUCTURE_ROAD
+                            && creep.room.memory.roads[s.rdMemval()] == true
             });
             if (roads) {
                 roads = _.sortBy(roads, (r) => { return r.hits  });
@@ -32,11 +40,13 @@ module.exports = {
                 if (creep.repair(target) == ERR_NOT_IN_RANGE) {
                     // move towards it
                     creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
+                } else {
+                    creep.room.memory.roads[target.rdMemval()] = false;
                 }
             }
             else {
                 // if we can't fine one look for construction sites
-                roleBuilder.run(creep);
+                roleFiller.run(creep);
             }
         }
         // if creep is supposed to get energy

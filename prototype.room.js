@@ -54,7 +54,7 @@ Room.prototype.balanceLinks =
         if ( (links.length > 0) 
           && (
                (links[0].store[RESOURCE_ENERGY] == 0 && _.last(links).store[RESOURCE_ENERGY] > _.first(links).store[RESOURCE_ENERGY])
-            || (links[0].store.getFreeCapcity > 0 && _.last(links).store.getFreeCapacity == 0)
+            || (links[0].store.getFreeCapacity(RESOURCE_ENERGY) > 0 && _.last(links).store.getFreeCapacity(RESOURCE_ENERGY) == 0)
           ) ) { 
 
             _.last(links).transferEnergy(_.first(links), (_.last(links).store[RESOURCE_ENERGY] / 2));
@@ -128,6 +128,9 @@ Room.prototype.createAttachedContainer =
 Room.prototype.salvageSources = 
     function () {
         let dropped_resources = this.find(FIND_DROPPED_RESOURCES);
+        let tombstones = this.find(FIND_TOMBSTONES, {
+            filter: s => (s.store.getUsedCapacity() > 0)
+        });
         let ruins = this.find(FIND_RUINS, {
             filter: s => (s.store.getUsedCapacity() > 0)
         });
@@ -135,6 +138,6 @@ Room.prototype.salvageSources =
             filter: s => (s.structureType == STRUCTURE_CONTAINER)
                       && (s.store.getUsedCapacity() > 0)
         });
-        let sources = [...ruins, ...dropped_resources, ...containers]
+        let sources = [...ruins, ...dropped_resources, ...tombstones, ...containers]
         return sources;
     };

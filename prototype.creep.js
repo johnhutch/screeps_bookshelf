@@ -3,6 +3,7 @@ var roles = {
     upgrader: require('role.upgrader'),
     builder: require('role.builder'),
     hauler: require('role.hauler'),
+    filler: require('role.filler'),
     miner: require('role.miner'),
     attacker: require('role.attacker'),
     defenseRepairer: require('role.defenseRepairer'),
@@ -60,18 +61,19 @@ Creep.prototype.unload =
         } else {
             // we've got energy to deposit, so
             // find closest spawn, extension or tower which is not full
-            if (this.room.energyAvailable > 550) {
+            // if the spawn and extensions need energy badly, or we're a filler, avoid towers and links
+            if (this.memory.role == "filler" || this.room.energyAvailable < 550) {
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                                || s.structureType == STRUCTURE_EXTENSION
-                                || s.structureType == STRUCTURE_LINK
-                                || s.structureType == STRUCTURE_TOWER)
+                                || s.structureType == STRUCTURE_EXTENSION)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
+                //console.log(this.room.name + ": " + structure);
             } else { 
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
                                 || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_LINK
                                 || s.structureType == STRUCTURE_TOWER)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
@@ -85,7 +87,7 @@ Creep.prototype.unload =
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
                 let controllerContainer = Game.getObjectById(this.room.memory.controllerContainerId);
-                if (link != undefined) {
+                if (link != undefined && this.memory.role != "filler") {
                     structure = link;
                 } else if (this.room.terminal) {
                     // if not, look for a terminal to dump it
@@ -253,7 +255,6 @@ Creep.prototype.getEnergy =
         // a container or doing long distance building, and should look for a source
         // first and foremost.
         if (this.memory.role == "builder" && useSource){
-            console.log('eh?');
             source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 
             // try to harvest energy, if the source is not in range

@@ -1,4 +1,4 @@
-var listOfRoles = ['harvester', 'attacker', 'miner', 'hauler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
+var listOfRoles = ['harvester', 'attacker', 'miner', 'hauler', 'filler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
 
 StructureSpawn.prototype.notify =
     function (name, creepRole) {
@@ -6,6 +6,11 @@ StructureSpawn.prototype.notify =
         let storage = this.room.storage != undefined ? this.room.storage.store[RESOURCE_ENERGY] : 0;
         let terminal = this.room.terminal != undefined ? this.room.terminal.store[RESOURCE_ENERGY] : 0;
         console.log("Energy in storage: " + storage + ". Energy in terminal: " + terminal);
+        this.room.visual.text(
+            '🛠️' + creepRole,
+            this.pos.x + 1,
+            this.pos.y,
+            {align: 'left', opacity: 0.8});
     };
 
 StructureSpawn.prototype.turnOnEmergencyMode =
@@ -97,8 +102,11 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             // if there are still miners or enough energy in Storage left
             if (numberOfCreeps['miner'] > 0 ||
                 (room.storage != undefined && room.storage.store[RESOURCE_ENERGY] >= 150 + 550)) {
-                name = this.createHauler(150, room.getHaulerTarget(2));
-                creepRole = "hauler";
+                let haulerTarget = room.getHaulerTarget(this.memory.minCreeps['hauler']);
+                if (haulerTarget) { 
+                    name = this.createHauler(150, haulerTarget);
+                    creepRole = "hauler for " + haulerTarget;
+                }
             }
             // if there is no miner and not enough energy in Storage left
             else {
@@ -120,7 +128,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
 
         // make sure every container has at a couple haulers assigned to it
         if (name == undefined) {
-            let haulerTarget = room.getHaulerTarget(2);
+            let haulerTarget = room.getHaulerTarget(this.memory.minCreeps['hauler']);
             if (haulerTarget) {
                 name = this.createHauler(150, haulerTarget);
                 creepRole = "hauler for " + haulerTarget;
@@ -144,7 +152,13 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
                     }
                 } else if (numberOfCreeps[role] < this.memory.minCreeps[role]) {
                     if (role == 'hauler') {
-                        name = this.createHauler(150, room.getHaulerTarget(2));
+                        let haulerTarget = room.getHaulerTarget(this.memory.minCreeps['hauler']);
+                        if (haulerTarget) {
+                            name = this.createHauler(150, haulerTarget);
+                            creepRole = "hauler for " + haulerTarget;
+                        }
+                    } else if (role == 'filler') {
+                        name = this.createFiller(150);
                     } else {
                         name = this.createCustomCreep(currentEnergy, role);
                     }
@@ -311,6 +325,24 @@ StructureSpawn.prototype.createAttacker=
 
         // create creep with the created body and the role 'attacker'
         return this.spawnCreep(body, 'attacker_' + Game.time, {memory: { role: 'attacker'}});
+    };
+
+StructureSpawn.prototype.createFiller =
+    function (energy, target) {
+        // create a body with twice as many CARRY as MOVE parts
+        var numberOfParts = Math.floor(energy / 150);
+        // make sure the creep is not too big (more than 6 parts)
+        numberOfParts = Math.min(numberOfParts, Math.floor(6 / 3));
+        var body = [];
+        for (let i = 0; i < numberOfParts * 2; i++) {
+            body.push(CARRY);
+        }
+        for (let i = 0; i < numberOfParts; i++) {
+            body.push(MOVE);
+        }
+
+        // create creep with the created body and the role 'hauler'
+        return this.spawnCreep(body, 'filler_' + Game.time, {memory: { role: 'filler', working: false }});
     };
 
 StructureSpawn.prototype.createHauler =
