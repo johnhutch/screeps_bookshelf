@@ -60,6 +60,7 @@ module.exports.loop = function () {
 
     for (let roomName in Game.rooms) {
         Game.rooms[roomName].checkForContainers();
+        Game.rooms[roomName].balanceLinks();
     }
 
     // spawn some stuff maybe

@@ -18,15 +18,21 @@ var roleBuilder = {
               let exit = creep.room.findExitTo(creep.memory.target);
               creep.moveTo(creep.pos.findClosestByRange(exit));
           } else {
-              var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_CONTAINER })
-                  || creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+              var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType != STRUCTURE_ROAD });
               if(target) {
                   if(creep.build(target) == ERR_NOT_IN_RANGE) {
                       creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
                   }
               } else {
-                  // go upgrading the controller
-                  roleUpgrader.run(creep);
+                  var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES)
+                  if(target) {
+                      if(creep.build(target) == ERR_NOT_IN_RANGE) {
+                          creep.moveTo(target, {visualizePathStyle: {stroke: '#00ff00'}});
+                      }
+                  } else {
+                      // go upgrading the controller
+                      roleUpgrader.run(creep);
+                  }
               }
           }
 	    }

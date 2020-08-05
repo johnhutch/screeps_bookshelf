@@ -60,12 +60,22 @@ Creep.prototype.unload =
         } else {
             // we've got energy to deposit, so
             // find closest spawn, extension or tower which is not full
-            structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                            || s.structureType == STRUCTURE_EXTENSION
-                            || s.structureType == STRUCTURE_TOWER)
-                            && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-            });
+            if (this.room.energyAvailable > 550) {
+                structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
+                                || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_LINK
+                                || s.structureType == STRUCTURE_TOWER)
+                                && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+            } else { 
+                structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
+                                || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_TOWER)
+                                && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+                });
+            }
 
             // if everything's full
             if (structure == undefined) {
@@ -94,7 +104,7 @@ Creep.prototype.unload =
             // try to transfer energy, if it is not in range
             if (this.transfer(structure, _.findKey(this.store)) == ERR_NOT_IN_RANGE) {
                 // move towards it
-                this.moveTo(structure, {visualizePathStyle: {stroke: '#ff0000'}});
+                this.moveTo(structure, {visualizePathStyle: {stroke: '#000000'}});
             }
         }
     };
@@ -164,6 +174,71 @@ Creep.prototype.getSalvage =
         }
     };
 
+/** @function */
+// finds energy and resources to be hauled back to primary storage and extensions
+Creep.prototype.haulResources =
+    function () {
+        // if the spawn was assigned a target 
+        if (this.memory.targetId != undefined) {
+            let target = Game.getObjectById(this.memory.targetId);
+            // and the target still exists in the room
+            if (target) {
+                if (target.store[RESOURCE_ENERGY] == 0 && this.room.energyAvailable < 550) {
+                    target = this.getEnergy(true, true);
+                }
+                if (target && this.withdraw(target, _.findKey(target.store)) == ERR_NOT_IN_RANGE) {
+                    // move towards it
+                    this.moveTo(target, { visualizePathStyle: {stroke: '#000000'} });
+                }
+            } else {
+                // target seems to have been deleted. go find something.
+                this.findHaulableResources();
+            }
+        } else {
+            // target was not assigned on spawn. go find something.
+            this.findHaulableResources();
+        }
+    };
+
+Creep.prototype.findHaulableResources =
+    function () {
+        // look for dropped resources from dead creeps
+        let dropped_resource = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+        if (dropped_resource == undefined) {
+            // find closest container
+            container = this.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: s => (s.structureType == STRUCTURE_CONTAINER)
+                          && s.store.getFreeCapacity() < s.store.getCapacity()
+            });
+
+            // if we didn't find a container with resources to be picked up
+            if (container == undefined) {
+                // and if we have a terminal
+                if (this.room.terminal) {
+                    // grab some energy from storage
+                    container = this.room.terminal
+                } else {
+                    // otherwise, grab it from storage
+                    container = this.room.storage;
+                }
+            }
+
+            // if one was found
+            if (container != undefined) {
+                // try to withdraw energy, if the container is not in range
+                if (this.withdraw(container, _.findKey(container.store)) == ERR_NOT_IN_RANGE) {
+                    // move towards it
+                    this.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
+                }
+            } 
+        } else {
+            if (this.pickup(dropped_resource) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(dropped_resource, {visualizePathStyle: {stroke: '#ff0000'}});
+            }
+        }
+    };
+
 /** @function 
     @param {bool} useContainer
     @param {bool} useSource */
@@ -178,6 +253,7 @@ Creep.prototype.getEnergy =
         // a container or doing long distance building, and should look for a source
         // first and foremost.
         if (this.memory.role == "builder" && useSource){
+            console.log('eh?');
             source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 
             // try to harvest energy, if the source is not in range
@@ -187,22 +263,28 @@ Creep.prototype.getEnergy =
             }
         } else {
             // if the Creep should look for containers
-            if (useContainer) {;
-                if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
-                    container = this.room.terminal;
-                } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
-                    container = this.room.storage;
-                } else if (container == undefined) {
-                    // find closest container
-                    container = this.pos.findClosestByPath(this.room.energySources());
+            if (useContainer) {
+                let container = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
+                if (container == null) {
+                    if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
+                        container = this.room.terminal;
+                    } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
+                        container = this.room.storage;
+                    } else {
+                        // find closest container
+                        container = this.pos.findClosestByPath(this.room.energySources());
+                    }
                 }
                 if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     // move towards it
                     this.moveTo(container);
+                } else if (this.pickup(container) == ERR_NOT_IN_RANGE) {
+                    // move towards it
+                    this.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
                 }
             }
             // if no container was found and the Creep should look for Sources
-            if (container == undefined && useSource) {
+            if (container == null && useSource) {
                 // find closest source
                 source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 
