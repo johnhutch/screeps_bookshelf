@@ -65,7 +65,8 @@ Creep.prototype.unload =
             if (this.memory.role == "filler" || this.room.energyAvailable < 550) {
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                                || s.structureType == STRUCTURE_EXTENSION)
+                                || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_TOWER)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
                 //console.log(this.room.name + ": " + structure);
@@ -250,50 +251,38 @@ Creep.prototype.getEnergy =
         let container = undefined;
         let source = undefined;
 
+        // if the Creep should look for containers
+        if (useContainer) {
+            let container = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
 
-        // if the creep is a builder and useSoure is true, it's likely building
-        // a container or doing long distance building, and should look for a source
-        // first and foremost.
-        if (this.memory.role == "builder" && useSource){
+            if (container == null) {
+                if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
+                    container = this.room.terminal;
+                } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
+                    container = this.room.storage;
+                } else {
+                    // find closest container
+                    container = this.pos.findClosestByPath(this.room.energySources());
+                }
+            }
+            if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(container);
+            } else if (this.pickup(container) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
+            }
+        }
+
+        // if no container was found and the Creep should look for Sources
+        if (container == null && useSource) {
+            // find closest source
             source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 
             // try to harvest energy, if the source is not in range
             if (this.harvest(source) == ERR_NOT_IN_RANGE) {
                 // move towards it
                 this.moveTo(source);
-            }
-        } else {
-            // if the Creep should look for containers
-            if (useContainer) {
-                let container = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
-                if (container == null) {
-                    if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
-                        container = this.room.terminal;
-                    } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
-                        container = this.room.storage;
-                    } else {
-                        // find closest container
-                        container = this.pos.findClosestByPath(this.room.energySources());
-                    }
-                }
-                if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    // move towards it
-                    this.moveTo(container);
-                } else if (this.pickup(container) == ERR_NOT_IN_RANGE) {
-                    // move towards it
-                    this.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
-                }
-            }
-            // if no container was found and the Creep should look for Sources
-            if (container == null && useSource) {
-                // find closest source
-                source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
-
-                // try to harvest energy, if the source is not in range
-                if (this.harvest(source) == ERR_NOT_IN_RANGE) {
-                    // move towards it
-                    this.moveTo(source);
-                }
             }
         }
     };

@@ -13,6 +13,18 @@ Room.prototype.checkForContainers =
         }
     };
 
+Room.prototype.isBuildingSourceContainers =
+    function () {
+        // look for all the construction sites
+        // that are containers
+        // that are not next to mineral sites
+        containers = this.find(FIND_CONSTRUCTION_SITES, { filter: (s) => 
+              s.structureType == STRUCTURE_CONTAINER
+           && s.pos.findInRange(FIND_MINERALS, 1).length == 0
+        });
+        return containers.length > 0;
+    };
+
 Room.prototype.energySources = 
     function () {
         let dropped_resources = this.find(FIND_DROPPED_RESOURCES, {
