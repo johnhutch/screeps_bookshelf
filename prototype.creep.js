@@ -11,7 +11,9 @@ var roles = {
     structureRepairer: require('role.structureRepairer'),
     claimer: require('role.claimer'),
     longDistanceSalvager: require('role.longDistanceSalvager'),
-    longDistanceHarvester: require('role.longDistanceHarvester')
+    longDistanceHarvester: require('role.longDistanceHarvester'),
+    longDistanceBuilder: require('role.longDistanceBuilder'),
+    longDistanceUpgrader: require('role.longDistanceUpgrader')
 };
 
 Creep.prototype.runRole =
