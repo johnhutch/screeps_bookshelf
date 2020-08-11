@@ -14,8 +14,8 @@ var roleBuilder = {
 	    }
 
 	    if(creep.memory.working) {
-          if(creep.memory.target && (creep.memory.target != creep.room.name)) {
-              let exit = creep.room.findExitTo(creep.memory.target);
+          if(creep.memory.targetRoom && (creep.memory.targetRoom != creep.room.name)) {
+              let exit = creep.room.findExitTo(creep.memory.targetRoom);
               creep.moveTo(creep.pos.findClosestByRange(exit));
           } else {
               var target = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType != STRUCTURE_ROAD });
@@ -38,7 +38,7 @@ var roleBuilder = {
 	    }
 	    else {
             // if we're a remote builder OR or the room doesn't have any containers or we're trying to build a container for a miner, use sources
-            if (creep.memory.target != undefined 
+            if (creep.memory.targetRoom != undefined 
              || !creep.room.memory.hasContainers
              || (!creep.room.storage && !creep.room.terminal)
              || creep.room.isBuildingSourceContainers()) {

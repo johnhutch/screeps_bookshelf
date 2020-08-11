@@ -340,6 +340,17 @@ StructureSpawn.prototype.createLdCreep =
             body.push(MOVE);
         }
 
+        switch (roleName) {
+            case 'longDistanceUpgrader':
+                roleName = 'upgrader';
+                break;
+            case 'longDistanceBuilder':
+                roleName = 'builder';
+                break;
+            default:
+                // do nothing
+         }
+
         // create creep with the created body
         return this.spawnCreep(body, roleName + '_' + Game.time, { memory: {
             role: roleName,

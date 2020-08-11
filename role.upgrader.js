@@ -14,7 +14,7 @@ var roleUpgrader = {
 	    }
 
 	    if(!creep.memory.working) {
-          if (creep.memory.target == undefined
+          if (creep.memory.targetRoom == undefined
             && creep.room.memory.hasContainers) {
               creep.getEnergy(true, false);
           } else {
@@ -22,8 +22,8 @@ var roleUpgrader = {
           }
       }
       else {
-          if(creep.memory.target && (creep.memory.target != creep.room.name)) {
-              let exit = creep.room.findExitTo(creep.memory.target);
+          if(creep.memory.targetRoom && (creep.memory.targetRoom != creep.room.name)) {
+              let exit = creep.room.findExitTo(creep.memory.targetRoom);
               creep.moveTo(creep.pos.findClosestByRange(exit));
           } else if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
               creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffaa00'}});
