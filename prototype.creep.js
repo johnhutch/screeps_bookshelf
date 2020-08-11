@@ -10,6 +10,7 @@ var roles = {
     roadRepairer: require('role.roadRepairer'),
     structureRepairer: require('role.structureRepairer'),
     claimer: require('role.claimer'),
+    dismantler: require('role.dismantler'),
     longDistanceSalvager: require('role.longDistanceSalvager'),
     longDistanceHarvester: require('role.longDistanceHarvester'),
     longDistanceBuilder: require('role.longDistanceBuilder'),
@@ -22,6 +23,7 @@ Creep.prototype.runRole =
             roles[this.memory.role].run(this);
         } catch(error) {
             console.log("runRole doesn't know about " + this);
+            console.log(error);
         }
     };
 

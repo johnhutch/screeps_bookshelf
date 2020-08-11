@@ -1,5 +1,5 @@
 var listOfRoles = ['harvester', 'attacker', 'miner', 'hauler', 'filler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
-var listOfLdRoles = ['longDistanceHarvester', 'longDistanceSalvager', 'longDistanceBuilder', 'longDistanceUpgrader'];
+var listOfLdRoles = ['longDistanceHarvester', 'longDistanceSalvager', 'longDistanceBuilder', 'longDistanceUpgrader', 'dismantler'];
 
 StructureSpawn.prototype.notify =
     function (name, creepRole) {
@@ -333,8 +333,11 @@ StructureSpawn.prototype.createLdCreep =
         for (let i = 0; i < numberOfParts; i++) {
             body.push(WORK);
         }
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(CARRY);
+        // dismantlers just drop shit
+        if (roleName != 'dismantler') {
+            for (let i = 0; i < numberOfParts; i++) {
+                body.push(CARRY);
+            }
         }
         for (let i = 0; i < numberOfParts; i++) {
             body.push(MOVE);
