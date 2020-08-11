@@ -16,7 +16,11 @@ var roles = {
 
 Creep.prototype.runRole =
     function () {
-        roles[this.memory.role].run(this);
+        try {
+            roles[this.memory.role].run(this);
+        } catch(error) {
+            console.log("runRole doesn't know about " + this);
+        }
     };
 
 Creep.prototype.rdMemval = 
@@ -53,23 +57,23 @@ Creep.prototype.transferEverything =
     };
 
 Creep.prototype.unload = 
-    function () {
+    function (room = false) {
         let structure = undefined;
+        room = Game.rooms[room] || this.room;
         // if we don't have any energy to deposit, just minerals, head to storage
         if (this.store[RESOURCE_ENERGY] == 0) {
-            structure = this.room.storage;
+            structure = room.storage;
         } else {
             // we've got energy to deposit, so
             // find closest spawn, extension or tower which is not full
             // if the spawn and extensions need energy badly, or we're a filler, avoid towers and links
-            if (this.memory.role == "filler" || this.room.energyAvailable < 550) {
+            if (this.memory.role == "filler" || room.energyAvailable < 550) {
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
                                 || s.structureType == STRUCTURE_EXTENSION
                                 || s.structureType == STRUCTURE_TOWER)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
-                //console.log(this.room.name + ": " + structure);
             } else { 
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
@@ -87,17 +91,17 @@ Creep.prototype.unload =
                     filter: (s) => s.structureType == STRUCTURE_LINK
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 });
-                let controllerContainer = Game.getObjectById(this.room.memory.controllerContainerId);
+                let controllerContainer = Game.getObjectById(room.memory.controllerContainerId);
                 if (link != undefined && this.memory.role != "filler") {
                     structure = link;
-                } else if (this.room.terminal) {
+                } else if (room.terminal) {
                     // if not, look for a terminal to dump it
-                    structure = this.room.terminal;
+                    structure = room.terminal;
                 } else if (controllerContainer) {
-                    structure = Game.getObjectById(this.room.memory.controllerContainerId);
+                    structure = Game.getObjectById(room.memory.controllerContainerId);
                 } else  {
                     // otherwise, throw it in storage
-                    structure = this.room.storage;
+                    structure = room.storage;
                 }
             }
         }
@@ -248,41 +252,47 @@ Creep.prototype.findHaulableResources =
 Creep.prototype.getEnergy =
     function (useContainer, useSource) {
         /** @type {StructureContainer} */
-        let container = undefined;
+        let target = this.memory.targetId || null;
         let source = undefined;
 
-        // if the Creep should look for containers
-        if (useContainer) {
-            let container = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
+        if (target) {
+            target = Game.getObjectById(target);
+        }
 
-            if (container == null) {
+        // if the Creep should look for containers
+        if (!target && useContainer) {
+            target = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
+
+            if (!target) {
                 if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
-                    container = this.room.terminal;
+                    target = this.room.terminal;
                 } else if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > 0) {
-                    container = this.room.storage;
+                    target = this.room.storage;
                 } else {
                     // find closest container
-                    container = this.pos.findClosestByPath(this.room.energySources());
+                    target = this.pos.findClosestByPath(this.room.energySources());
                 }
-            }
-            if (this.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                // move towards it
-                this.moveTo(container);
-            } else if (this.pickup(container) == ERR_NOT_IN_RANGE) {
-                // move towards it
-                this.moveTo(container, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         }
 
         // if no container was found and the Creep should look for Sources
-        if (container == null && useSource) {
+        if (!target && useSource) {
             // find closest source
-            source = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+            target = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
 
-            // try to harvest energy, if the source is not in range
-            if (this.harvest(source) == ERR_NOT_IN_RANGE) {
+        }
+        if (target) {
+            if (this.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 // move towards it
-                this.moveTo(source);
+                this.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+            } else if (this.pickup(target) == ERR_NOT_IN_RANGE) {
+                // move towards it
+                this.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
+            } else if (this.harvest(target) == ERR_NOT_IN_RANGE) {
+                // try to harvest energy, if the source is not in range
+                // move towards it
+                this.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}});
             }
         }
     };
+

@@ -1,4 +1,5 @@
 var listOfRoles = ['harvester', 'attacker', 'miner', 'hauler', 'filler', 'claimer', 'upgrader', 'builder', 'structureRepairer', 'roadRepairer', 'defenseRepairer'];
+var listOfLdRoles = ['longDistanceHarvester', 'longDistanceSalvager', 'longDistanceBuilder', 'longDistanceUpgrader'];
 
 StructureSpawn.prototype.notify =
     function (name, creepRole) {
@@ -168,86 +169,33 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             }
         }
 
-        // if none of the above caused a spawn command check for LongDistanceHarvesters
-        let numberOfLongDistanceHarvesters = {};
+        // if nothing's created above, let's try to create some long distance creeps
         if (name == undefined) {
-            // if we don't have our min LDH object
-            // (minLDH object is a list of roomnames which contain their min LDH counts)
-            if (this.memory.minLongDistanceHarvesters == undefined) {
-                this.memory.minLongDistanceHarvesters = {};
-            }
-            // count the number of long distance harvesters globally
-            for (let roomName in this.memory.minLongDistanceHarvesters) {
-                numberOfLongDistanceHarvesters[roomName] = _.sum(Game.creeps, (c) =>
-                    c.memory.role == 'longDistanceHarvester' && c.memory.target == roomName)
+            let creepNum = {};
 
-                if ( (numberOfLongDistanceHarvesters[roomName] < this.memory.minLongDistanceHarvesters[roomName])
-                  && (currentEnergy > 500) ) {
-                    name = this.createLongDistanceHarvester(currentEnergy, 2, room.name, roomName, 0);
-                    creepRole = "LDH";
+            // make sure this spawn had a minLdRoles array in memory
+            if (this.memory.minLdRoles == undefined) {
+                this.memory.minLdRoles = {};
+            }
+            // cycle through the roles we defined in listOfRoles at the top of this doc
+            for (let ldRole of listOfLdRoles) {
+                // create objects for any roles not already in this spawn's minLdRoles memory object
+                if (this.memory.minLdRoles[ldRole] == undefined) {
+                    this.memory.minLdRoles[ldRole] = { };
                 }
-            }
-        }
 
-        // if none of the above caused a spawn command check for LongDistanceSalvagers
-        let numberOfLongDistanceSalvagers = {};
-        if (name == undefined) {
-            // if we don't have our min LDH object
-            // (minLDH object is a list of roomnames which contain their min LDH counts)
-            if (this.memory.minLongDistanceSalvagers == undefined) {
-                this.memory.minLongDistanceSalvagers = {};
-            }
-            // count the number of long distance builders globally
-            for (let roomName in this.memory.minLongDistanceSalvagers) {
-                numberOfLongDistanceSalvagers[roomName] = _.sum(Game.creeps, (c) =>
-                    c.memory.role == 'longDistanceSalvager' && c.memory.target == roomName)
+                // cycle through the rooms in the spawn's minLdRole object for the current ldRole
+                for (let roomName in this.memory.minLdRoles[ldRole]) {
+                    // count the number of creeps in the game currently assigned to this room
+                    creepNum[roomName] = _.sum(Game.creeps, (c) =>
+                        c.memory.role == ldRole && c.memory.targetRoom == roomName);
 
-                if ( (numberOfLongDistanceSalvagers[roomName] < this.memory.minLongDistanceSalvagers[roomName])
-                  && (currentEnergy > 500) ) {
-                    name = this.createLongDistanceSalvager(currentEnergy, 2, room.name, roomName);
-                    creepRole = "LDS";
-                }
-            }
-        }
-
-        // if none of the above caused a spawn command check for LongDistanceBuilders
-        let numberOfLongDistanceBuilders = {};
-        if (name == undefined) {
-            // if we don't have our min LDH object
-            // (minLDH object is a list of roomnames which contain their min LDH counts)
-            if (this.memory.minLongDistanceBuilders == undefined) {
-                this.memory.minLongDistanceBuilders = {};
-            }
-            // count the number of long distance builders globally
-            for (let roomName in this.memory.minLongDistanceBuilders) {
-                numberOfLongDistanceBuilders[roomName] = _.sum(Game.creeps, (c) =>
-                    c.memory.role == 'builder' && c.memory.target == roomName)
-
-                if ( (numberOfLongDistanceBuilders[roomName] < this.memory.minLongDistanceBuilders[roomName])
-                  && (currentEnergy > 500) ) {
-                    name = this.createLongDistanceBuilders(currentEnergy, 2, room.name, roomName);
-                    creepRole = "LDB";
-                }
-            }
-        }
-
-        // if none of the above caused a spawn command check for LongDistanceUpgraders
-        let numberOfLongDistanceUpgraders= {};
-        if (name == undefined) {
-            // if we don't have our min LDU object
-            // (minLDH object is a list of roomnames which contain their min LDH counts)
-            if (this.memory.minLongDistanceUpgraders == undefined) {
-                this.memory.minLongDistanceUpgraders = {};
-            }
-            // count the number of long distance upgraders globally
-            for (let roomName in this.memory.minLongDistanceUpgraders) {
-                numberOfLongDistanceUpgraders[roomName] = _.sum(Game.creeps, (c) =>
-                    c.memory.role == 'upgrader' && c.memory.target == roomName)
-
-                if ( (numberOfLongDistanceUpgraders[roomName] < this.memory.minLongDistanceUpgraders[roomName])
-                  && (currentEnergy > 500) ) {
-                    name = this.createLongDistanceUpgraders(currentEnergy, 2, room.name, roomName);
-                    creepRole = "LDU";
+                    // if we don't have enough ldRole creeps in that room, create one
+                    if ( (creepNum[roomName] < this.memory.minLdRoles[ldRole][roomName])
+                      && (currentEnergy > 500) ) {
+                        name = this.createLdCreep(currentEnergy, 2, room.name, roomName, ldRole);
+                        creepRole = ldRole;
+                    }
                 }
             }
         }
@@ -370,70 +318,8 @@ StructureSpawn.prototype.createClaimer =
         return this.spawnCreep([CLAIM, MOVE], 'claimer_' + Game.time, {memory: { role: 'claimer', target: target }});
     };
 
-StructureSpawn.prototype.createLongDistanceSalvager =
-    function (energy, numberOfWorkParts, home, target, sourceIndex) {
-        // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
-        var body = [];
-        for (let i = 0; i < numberOfWorkParts; i++) {
-            body.push(WORK);
-        }
-
-        // 150 = 100 (cost of WORK) + 50 (cost of MOVE)
-        energy -= 150 * numberOfWorkParts;
-
-        var numberOfParts = Math.floor(energy / 100);
-        // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor((15 - numberOfWorkParts * 2) / 2));
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(CARRY);
-        }
-        for (let i = 0; i < numberOfParts + numberOfWorkParts; i++) {
-            body.push(MOVE);
-        }
-
-        // create creep with the created body
-        return this.spawnCreep(body, "longDistanceSalvager" + '_' + Game.time, { memory: {
-            role: 'longDistanceSalvager',
-            home: home,
-            target: target,
-            sourceIndex: sourceIndex,
-            working: false
-        }});
-    };
-
-StructureSpawn.prototype.createLongDistanceHarvester =
-    function (energy, numberOfWorkParts, home, target, sourceIndex) {
-        // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
-        var body = [];
-        for (let i = 0; i < numberOfWorkParts; i++) {
-            body.push(WORK);
-        }
-
-        // 150 = 100 (cost of WORK) + 50 (cost of MOVE)
-        energy -= 150 * numberOfWorkParts;
-
-        var numberOfParts = Math.floor(energy / 100);
-        // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor((15 - numberOfWorkParts * 2) / 2));
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(CARRY);
-        }
-        for (let i = 0; i < numberOfParts + numberOfWorkParts; i++) {
-            body.push(MOVE);
-        }
-
-        // create creep with the created body
-        return this.spawnCreep(body, "longDistanceHarvester" + '_' + Game.time, { memory: {
-            role: 'longDistanceHarvester',
-            home: home,
-            target: target,
-            sourceIndex: sourceIndex,
-            working: false
-        }});
-    };
-
-StructureSpawn.prototype.createLongDistanceUpgraders =
-    function (energy, numberOfWorkParts, home, target) {
+StructureSpawn.prototype.createLdCreep = 
+    function (energy, numberOfWorkParts, home, targetRoom, roleName) {
         // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
         if (energy < 400) {
           // can't create a creep. dump out.
@@ -442,7 +328,7 @@ StructureSpawn.prototype.createLongDistanceUpgraders =
         // create a balanced body as big as possible with the given energy
         var numberOfParts = Math.floor(energy / 200);
         // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
+        numberOfParts = Math.min(numberOfParts, Math.floor(12 / 3));
         var body = [];
         for (let i = 0; i < numberOfParts; i++) {
             body.push(WORK);
@@ -455,41 +341,10 @@ StructureSpawn.prototype.createLongDistanceUpgraders =
         }
 
         // create creep with the created body
-        return this.spawnCreep(body, "longDistanceUpgrader" + '_' + Game.time, { memory: {
-            role: 'upgrader',
+        return this.spawnCreep(body, roleName + '_' + Game.time, { memory: {
+            role: roleName,
             home: home,
-            target: target,
-            working: false
-        }});
-    };
-
-StructureSpawn.prototype.createLongDistanceBuilders =
-    function (energy, numberOfWorkParts, home, target) {
-        // create a body with the specified number of WORK parts and one MOVE part per non-MOVE part
-        if (energy < 400) {
-          // can't create a creep. dump out.
-          return;
-        }
-        // create a balanced body as big as possible with the given energy
-        var numberOfParts = Math.floor(energy / 200);
-        // make sure the creep is not too big (more than 15 parts)
-        numberOfParts = Math.min(numberOfParts, Math.floor(9 / 3));
-        var body = [];
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(WORK);
-        }
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(CARRY);
-        }
-        for (let i = 0; i < numberOfParts; i++) {
-            body.push(MOVE);
-        }
-
-        // create creep with the created body
-        return this.spawnCreep(body, "longDistanceBuilder" + '_' + Game.time, { memory: {
-            role: 'builder',
-            home: home,
-            target: target,
+            targetRoom: targetRoom,
             working: false
         }});
     };

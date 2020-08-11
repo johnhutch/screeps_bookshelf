@@ -26,7 +26,8 @@ Room.prototype.isBuildingSourceContainers =
     };
 
 Room.prototype.energySources = 
-    function () {
+    function (isRemote = false) {
+        let allSources = [];
         let dropped_resources = this.find(FIND_DROPPED_RESOURCES, {
             filter: s => (s.structureType != STRUCTURE_CONTAINER)
         });
@@ -43,8 +44,14 @@ Room.prototype.energySources =
             filter: s => (s.structureType == STRUCTURE_CONTAINER)
                       && s.store[RESOURCE_ENERGY] > 0
         });
-        let sources = [...links, ...ruins, ...dropped_resources] 
-        return sources;
+        let sources = this.find(FIND_SOURCES_ACTIVE);
+        if (isRemote) {
+            allSources = [...ruins, ...dropped_resources, ...containers, ...sources];
+        } else {
+            allSources = [...links, ...ruins, ...dropped_resources]; 
+        }
+
+        return allSources;
     };
 
 Room.prototype.balanceLinks = 
