@@ -39,10 +39,30 @@ var buildNewRoads = function(roomName) {
     }
 }
 
+// evenly distributes energy across all available terminals
+var normalizeTerminals = function() {
+    let terminals = _.filter(Game.structures, (s) => s.structureType == STRUCTURE_TERMINAL);
+    terminals = _.sortBy(terminals, (t) => { return t.store[RESOURCE_ENERGY] });
+    let mean = _.floor(_.sum(terminals, (t) => t.store[RESOURCE_ENERGY]) / terminals.length)
+    let smallest = _.first(terminals).store[RESOURCE_ENERGY];
+    let biggest = _.last(terminals).store[RESOURCE_ENERGY] 
+    let transfer_amount = biggest - mean;
+    let result = 0;
+
+    if ((smallest < mean / 2) && (mean > 1000)) {
+           result = _.last(terminals).send(RESOURCE_ENERGY, mean, _.first(terminals).room.name);
+           console.log("normalizing terminals: " + biggest + " sends " + mean + " to " + smallest);
+    }
+    return result;
+}
+
 module.exports.loop = function () {
 
     // little one-off functions I can turn on and off
     for(var name in Game.rooms) {
+
+        normalizeTerminals();
+
         // console.log('Room "'+name+'" has '+Game.rooms[name].energyAvailable+' energy');
         // buildNewRoads(name);
         // destroyAllRoadConstruction(name);
