@@ -48,7 +48,7 @@ Room.prototype.energySources =
         if (isRemote) {
             allSources = [...ruins, ...dropped_resources, ...containers, ...sources];
         } else {
-            allSources = [...links, ...ruins, ...dropped_resources]; 
+            allSources = [...links, ...ruins, ...dropped_resources, ...containers]; 
         }
 
         return allSources;

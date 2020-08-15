@@ -71,7 +71,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         for (let role of listOfRoles) {
             if (this.memory.minCreeps[role] == undefined) {
               console.log(room.name + " don't know shit about " + role);
-              this.memory.minCreeps[role] = 1;
+              this.memory.minCreeps[role] = 0;
             }
         }
 
@@ -121,7 +121,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
             // check if all sources have miners
             let sourceId = this.findContaineredSourceId();
 
-            if(sourceId) {
+            if(sourceId && currentEnergy > 150) {
                 name = this.createMiner(sourceId, currentEnergy);
                 creepRole = "miner";
             }

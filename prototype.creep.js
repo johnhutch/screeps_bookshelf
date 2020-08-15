@@ -77,7 +77,7 @@ Creep.prototype.unload =
                                 || s.structureType == STRUCTURE_EXTENSION
                                 || s.structureType == STRUCTURE_TOWER)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
+                }, { maxRooms: 1 });
             } else { 
                 structure = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => (s.structureType == STRUCTURE_SPAWN
@@ -85,7 +85,7 @@ Creep.prototype.unload =
                                 || s.structureType == STRUCTURE_LINK
                                 || s.structureType == STRUCTURE_TOWER)
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
+                }, { maxRooms: 1 });
             }
 
             // if everything's full
@@ -94,7 +94,7 @@ Creep.prototype.unload =
                 let link = this.pos.findClosestByPath(FIND_MY_STRUCTURES, {
                     filter: (s) => s.structureType == STRUCTURE_LINK
                                 && s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                });
+                }, { maxRooms: 1 });
                 let controllerContainer = Game.getObjectById(room.memory.controllerContainerId);
                 if (link != undefined && this.memory.role != "filler") {
                     structure = link;
@@ -171,7 +171,7 @@ Creep.prototype.buildRoad =
 
 Creep.prototype.getSalvage =
     function () {
-        let salvage = this.pos.findClosestByPath(this.room.salvageSources());
+        let salvage = this.pos.findClosestByPath(this.room.salvageSources(), { maxRooms: 1 } );
 
         // if no container was found and the Creep should look for Sources
         if (salvage != undefined) {
@@ -214,13 +214,13 @@ Creep.prototype.haulResources =
 Creep.prototype.findHaulableResources =
     function () {
         // look for dropped resources from dead creeps
-        let dropped_resource = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES);
+        let dropped_resource = this.pos.findClosestByPath(FIND_DROPPED_RESOURCES, { maxRooms: 1 } );
         if (dropped_resource == undefined) {
             // find closest container
             container = this.pos.findClosestByPath(FIND_STRUCTURES, {
                 filter: s => (s.structureType == STRUCTURE_CONTAINER)
                           && s.store.getFreeCapacity() < s.store.getCapacity()
-            });
+            }, { maxRooms: 1 });
 
             // if we didn't find a container with resources to be picked up
             if (container == undefined) {
@@ -265,7 +265,7 @@ Creep.prototype.getEnergy =
 
         // if the Creep should look for containers
         if (!target && useContainer) {
-            target = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ));
+            target = this.pos.findClosestByPath(_.filter(this.room.energySources(), (s) => s.structureType != STRUCTURE_CONTAINER ), { maxRooms: 1} );
 
             if (!target) {
                 if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > 0) {
@@ -274,7 +274,7 @@ Creep.prototype.getEnergy =
                     target = this.room.storage;
                 } else {
                     // find closest container
-                    target = this.pos.findClosestByPath(this.room.energySources());
+                    target = this.pos.findClosestByPath(this.room.energySources(), { maxRooms: 1 } );
                 }
             }
         }
@@ -282,7 +282,7 @@ Creep.prototype.getEnergy =
         // if no container was found and the Creep should look for Sources
         if (!target && useSource) {
             // find closest source
-            target = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
+            target = this.pos.findClosestByPath(FIND_SOURCES_ACTIVE, { maxRooms: 1 });
 
         }
         if (target) {

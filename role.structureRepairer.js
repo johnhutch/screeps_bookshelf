@@ -3,11 +3,16 @@ var roleBuilder = require('role.builder');
 module.exports = {
     run: function(creep) {
         // if creep is trying to repair something but has no energy left
-        if (creep.memory.working == true && creep.carry.energy == 0) {
-            creep.memory.working = false;
+        if (creep.memory.working == true && creep.store[RESOURCE_ENERGY] == 0) {
+            // look and see if we maybe picked up some minerals by accident and unload them
+            if (_.sum(creep.store) > 0 ) {
+                creep.unload();
+            } else {
+                creep.memory.working = false;
+            }
         }
         // if creep is harvesting energy but is full
-        else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
+        else if (creep.memory.working == false && _.sum(creep.store) == creep.store.getCapacity() ) {
             creep.memory.working = true;
         }
 
@@ -25,27 +30,7 @@ module.exports = {
             if (structures) {
                 structures = _.sortBy(structures, (s) => { return s.hits  });
             }
-
-            // loop through to find a target to repair
-            for (let s of structures) {
-                // if it's a road, check to see if we've walked over it recently before repairing it
-                if (s.structureType == STRUCTURE_ROAD) {
-                    let memval = s.rdMemval();
-                    if (creep.room.memory.roads[memval]) {
-                        target = s;
-                        delete creep.room.memory.roads[memval];
-                    }
-                } else {
-                    // it's not a road, just fix it
-                    target = s;
-                }
-
-                // if there is one
-                if (target != undefined) {
-                    // break the loop
-                    break;
-                }
-            }
+            target = structures[0];
 
             // if we find a structure that has to be repaired
             if (target != undefined) {
@@ -63,7 +48,14 @@ module.exports = {
         }
             // if creep is supposed to get energy
         else {
-            creep.getEnergy(true, false);
+            if (creep.memory.targetRoom != undefined 
+             || !creep.room.memory.hasContainers
+             || (!creep.room.storage && !creep.room.terminal)
+             || creep.room.isBuildingSourceContainers()) {
+                creep.getEnergy(true, true);
+            } else {
+                creep.getEnergy(true, false);
+            }
         }
     }
 }

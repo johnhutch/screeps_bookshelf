@@ -5,10 +5,15 @@ var roleBuilder = {
     run: function(creep) {
 
 	    if (creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
-            creep.memory.working = false;
-            creep.say('🔄 harvest');
+            // look and see if we maybe picked up some minerals by accident and unload them
+            if (_.sum(creep.store) > 0 ) {
+                creep.unload();
+            } else {
+                creep.memory.working = false;
+                creep.say('🔄 harvest');
+            }
 	    }
-	    if (!creep.memory.working && creep.store.getFreeCapacity() == 0) {
+        else if (creep.memory.working == false && _.sum(creep.store) == creep.store.getCapacity() ) {
 	        creep.memory.working = true;
 	        creep.say('🚧 build');
 	    }
